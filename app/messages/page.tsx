@@ -11,7 +11,10 @@ import {
     Inbox,
     Plus,
     MoreVertical,
-    CheckCircle
+    CheckCircle,
+    Paperclip,
+    FileText,
+    Download
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -28,6 +31,8 @@ interface Mensaje {
     sender_id: string;
     receiver_id: string;
     content: string;
+    attachment_url?: string;
+    attachment_name?: string;
     created_at: string;
 }
 
@@ -48,6 +53,8 @@ export default function MessagesPage() {
     const [activeTab, setActiveTab] = useState<"chat" | "tasks">("chat");
     const [currentUser, setCurrentUser] = useState<Empleado | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         async function init() {
@@ -57,12 +64,15 @@ export default function MessagesPage() {
 
             if (emps) {
                 setEmployees(emps);
-                // Intentar encontrar el empleado que coincide con el email del usuario autenticado
-                const current = emps.find(e => e.email === (user?.email || 'rafa@hr-minisuite.com'));
-                setCurrentUser(current || emps[0]);
+                const current = emps.find(e => e.email === user?.email);
+                if (current) {
+                    setCurrentUser(current);
+                }
             }
 
-            const { data: t } = await supabase.from("tareas").select("*").eq("status", "pendiente");
+            // Filtrar tareas solo para el usuario actual si existe
+            let taskQuery = supabase.from("tareas").select("*").eq("status", "pendiente");
+            const { data: t } = await taskQuery;
             if (t) setTasks(t);
             setLoading(false);
         }
@@ -92,16 +102,48 @@ export default function MessagesPage() {
         }
     }, [selectedReceiverId]);
 
-    const handleSendMessage = async () => {
-        if (!newMessage.trim() || !selectedReceiverId || !currentUser) return;
+    const handleSendMessage = async (attachment?: { url: string; name: string }) => {
+        if ((!newMessage.trim() && !attachment) || !selectedReceiverId || !currentUser) return;
+
         const { error } = await supabase.from("mensajes").insert({
             sender_id: currentUser.id,
             receiver_id: selectedReceiverId,
-            content: newMessage
+            content: newMessage,
+            attachment_url: attachment?.url,
+            attachment_name: attachment?.name
         });
+
         if (!error) {
             setNewMessage("");
             fetchMessages(selectedReceiverId);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !currentUser) return;
+
+        setIsUploading(true);
+        try {
+            const timestamp = Date.now();
+            const filePath = `chat/${currentUser.id}/${timestamp}_${file.name}`;
+
+            const { data, error } = await supabase.storage
+                .from('hr-documents')
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('hr-documents')
+                .getPublicUrl(filePath);
+
+            await handleSendMessage({ url: publicUrl, name: file.name });
+        } catch (error: any) {
+            alert("Error al subir archivo: " + error.message);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };
 
@@ -215,6 +257,25 @@ export default function MessagesPage() {
                                                     : "bg-white text-charcoal rounded-r-lg rounded-tl-lg"
                                             )}>
                                                 {msg.content}
+                                                {msg.attachment_url && (
+                                                    <div className={cn(
+                                                        "mt-3 p-3 rounded-sm border-premium flex items-center gap-3",
+                                                        msg.sender_id === currentUser?.id ? "bg-white/10" : "bg-black/5"
+                                                    )}>
+                                                        <FileText size={16} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[10px] font-bold truncate">{msg.attachment_name}</p>
+                                                        </div>
+                                                        <a
+                                                            href={msg.attachment_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="p-1 hover:bg-black/10 rounded-full transition-colors"
+                                                        >
+                                                            <Download size={14} />
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="text-[8px] font-bold uppercase tracking-widest text-charcoal/30 mt-1">
                                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -226,6 +287,19 @@ export default function MessagesPage() {
                                 <div className="p-6 bg-white border-t-premium">
                                     <div className="flex items-center gap-4">
                                         <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileUpload}
+                                            className="hidden"
+                                        />
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            className="p-3 border-premium text-charcoal/40 hover:text-charcoal transition-colors rounded-sm"
+                                        >
+                                            {isUploading ? <Clock className="animate-spin" size={20} /> : <Paperclip size={20} />}
+                                        </button>
+                                        <input
                                             type="text"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
@@ -234,7 +308,7 @@ export default function MessagesPage() {
                                             className="flex-1 bg-[#FAFAF8] border-premium rounded-sm px-6 py-3 text-sm font-medium focus:outline-none focus:border-charcoal transition-colors"
                                         />
                                         <button
-                                            onClick={handleSendMessage}
+                                            onClick={() => handleSendMessage()}
                                             className="bg-charcoal text-white p-3 rounded-sm hover:translate-y-[-2px] transition-transform shadow-sm"
                                         >
                                             <Send size={20} />
