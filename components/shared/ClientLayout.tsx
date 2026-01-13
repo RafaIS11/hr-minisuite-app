@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import { MainSidebar } from "./MainSidebar";
 import AIChatbot from "./AIChatbot";
-import ProfileSync from "./ProfileSync";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -24,7 +23,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 {children}
             </main>
             <AIChatbot />
-            <ProfileSync />
         </div>
     );
 }
