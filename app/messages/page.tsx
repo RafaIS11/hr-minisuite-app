@@ -54,7 +54,17 @@ export default function MessagesPage() {
     const [currentUser, setCurrentUser] = useState<Empleado | null>(null);
     const [loading, setLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const fetchEmployeesRecords = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -118,18 +128,25 @@ export default function MessagesPage() {
     const handleSendMessage = async (attachment?: { url: string; name: string }) => {
         if ((!newMessage.trim() && !attachment) || !selectedReceiverId || !currentUser) return;
 
+        const messageToSend = newMessage;
+        setNewMessage(""); // Clear immediately for fluidity
+        setIsSending(true);
+
         const { error } = await supabase.from("mensajes").insert({
             sender_id: currentUser.id,
             receiver_id: selectedReceiverId,
-            content: newMessage,
+            content: messageToSend,
             attachment_url: attachment?.url,
             attachment_name: attachment?.name
         });
 
-        if (!error) {
-            setNewMessage("");
+        if (error) {
+            alert("No se pudo enviar el mensaje: " + error.message);
+            setNewMessage(messageToSend); // Restore if failed
+        } else {
             fetchMessages(selectedReceiverId);
         }
+        setIsSending(false);
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,6 +272,11 @@ export default function MessagesPage() {
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                                    {messages.length === 0 && (
+                                        <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
+                                            <p className="text-xs font-bold uppercase tracking-widest">No hay mensajes aún</p>
+                                        </div>
+                                    )}
                                     {messages.map((msg) => (
                                         <div
                                             key={msg.id}
@@ -295,9 +317,17 @@ export default function MessagesPage() {
                                             </span>
                                         </div>
                                     ))}
+                                    <div ref={messagesEndRef} />
                                 </div>
 
-                                <div className="p-6 bg-white border-t-premium">
+                                <div className="p-6 bg-white border-t-premium pr-24 relative">
+                                    {!currentUser && (
+                                        <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+                                            <p className="text-xs font-bold uppercase tracking-widest text-primary italic">
+                                                ⚠️ Debes configurar tu perfil en "Ajustes" para empezar a chatear.
+                                            </p>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-4">
                                         <input
                                             type="file"
@@ -322,9 +352,10 @@ export default function MessagesPage() {
                                         />
                                         <button
                                             onClick={() => handleSendMessage()}
-                                            className="bg-charcoal text-white p-3 rounded-sm hover:translate-y-[-2px] transition-transform shadow-sm"
+                                            disabled={isSending || !newMessage.trim()}
+                                            className="bg-charcoal text-white p-3 rounded-sm hover:translate-y-[-2px] transition-transform shadow-sm disabled:opacity-20"
                                         >
-                                            <Send size={20} />
+                                            {isSending ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Send size={20} />}
                                         </button>
                                     </div>
                                 </div>
