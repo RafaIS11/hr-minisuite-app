@@ -13,7 +13,14 @@ import {
     FileEdit as WordIcon,
     X,
     Loader2,
-    Database
+    Database,
+    Plus,
+    MoreHorizontal,
+    ChevronDown,
+    Calendar,
+    Tag,
+    Share2,
+    CheckCircle2
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -27,6 +34,14 @@ import {
     Documento
 } from "@/lib/documentos";
 
+const CATEGORIES = [
+    { id: 'nomina', label: 'Nómina', color: 'bg-emerald-100 text-emerald-800' },
+    { id: 'contrato', label: 'Contrato', color: 'bg-blue-100 text-blue-800' },
+    { id: 'cliente', label: 'Cliente', color: 'bg-purple-100 text-purple-800' },
+    { id: 'proveedor', label: 'Proveedor', color: 'bg-orange-100 text-orange-800' },
+    { id: 'certificado', label: 'Certificado', color: 'bg-amber-100 text-amber-800' },
+];
+
 export default function DocumentsPage() {
     const [docs, setDocs] = useState<Documento[]>([]);
     const [stats, setStats] = useState({ total: 0, pdfs: 0, excels: 0, words: 0 });
@@ -35,6 +50,7 @@ export default function DocumentsPage() {
     const [selectedCategory, setSelectedCategory] = useState("todos");
     const [selectedEntity, setSelectedEntity] = useState("");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
     // Upload Form
     const [uploading, setUploading] = useState(false);
@@ -48,26 +64,26 @@ export default function DocumentsPage() {
 
     const loadData = async () => {
         setLoading(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
+            const data = await obtenerDocumentos({
+                categoria: selectedCategory,
+                cliente: selectedEntity,
+                search: search,
+                empleado_id: emp?.id
+            });
+            setDocs(data);
+
+            const s = await obtenerEstadisticas(emp?.id);
+            setStats(s);
+        } catch (err) {
+            console.error(err);
+        } finally {
             setLoading(false);
-            return;
         }
-
-        const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
-        const empleado_id = emp?.id || "anonymous";
-
-        const data = await obtenerDocumentos({
-            categoria: selectedCategory,
-            cliente: selectedEntity,
-            search: search,
-            empleado_id: empleado_id
-        });
-        setDocs(data);
-
-        const s = await obtenerEstadisticas(empleado_id);
-        setStats(s);
-        setLoading(false);
     };
 
     const handleUpload = async (e: React.FormEvent) => {
@@ -104,187 +120,201 @@ export default function DocumentsPage() {
 
     const getFileIcon = (formato: string) => {
         switch (formato) {
-            case 'pdf': return <FileIcon className="text-error" size={20} />;
-            case 'xlsx': return <ExcelIcon className="text-success" size={20} />;
-            case 'docx': return <WordIcon className="text-primary" size={20} />;
-            default: return <FileText size={20} />;
+            case 'pdf': return <FileIcon className="text-red-500" size={18} />;
+            case 'xlsx': return <ExcelIcon className="text-green-600" size={18} />;
+            case 'docx': return <WordIcon className="text-blue-500" size={18} />;
+            default: return <FileText size={18} />;
         }
     };
 
     return (
-        <div className="h-screen flex flex-col bg-[#FAFAF8]">
-            {/* Header */}
-            <header className="p-8 border-b-[1.5px] border-[#2C2C2A]/10 bg-white flex flex-col lg:flex-row items-center justify-between gap-6">
-                <div>
-                    <p className="text-[10px] font-bold text-[#704A38] uppercase tracking-[0.3em] mb-2">Gestión Documental</p>
-                    <h1 className="text-3xl font-display tracking-tighter text-[#2C2C2A] uppercase">Archivo Centralizado</h1>
+        <div className="min-h-screen bg-white text-[#37352f] font-sans selection:bg-[#2eaaaf]/20">
+            {/* Notion Style Header */}
+            <div className="max-w-7xl mx-auto px-12 pt-12">
+                <div className="flex items-center gap-3 mb-4 group cursor-default">
+                    <div className="w-12 h-12 bg-[#F1F1EF] rounded-lg flex items-center justify-center text-2xl shadow-sm group-hover:bg-[#E8E8E4] transition-colors">
+                        📄
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-bold tracking-tight">Archivo Central</h1>
+                        <p className="text-sm text-[#37352f]/40 font-medium">Gestiona documentos, contratos y nóminas de forma centralizada.</p>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2C2C2A]/20" size={16} />
+                {/* Properties Bar / Top Filters */}
+                <div className="flex flex-wrap items-center gap-4 py-6 border-b border-[#37352f]/10 mb-8">
+                    <div className="flex items-center gap-2 px-3 py-1.5 hover:bg-[#F1F1EF] rounded-md transition-colors cursor-pointer group">
+                        <Search size={14} className="text-[#37352f]/40 group-hover:text-[#37352f]" />
                         <input
                             type="text"
-                            placeholder="Buscar en el archivo..."
+                            placeholder="Buscar archivo..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="bg-[#F1F1EF] border-[1.5px] border-[#2C2C2A]/10 pl-12 pr-6 py-4 text-xs font-bold outline-none focus:border-[#704A38] transition-all w-80"
+                            className="bg-transparent border-none outline-none text-sm font-medium w-40 placeholder:text-[#37352f]/30"
                         />
                     </div>
-                    <button
-                        onClick={() => setIsUploadOpen(true)}
-                        className="bg-[#704A38] text-white px-8 py-4 rounded-sm font-bold text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 hover:translate-y-[-2px] transition-all shadow-[8px_8px_0px_0px_rgba(112,74,56,0.1)]"
-                    >
-                        <Upload size={14} /> Subir Archivo
-                    </button>
+                    <div className="h-4 w-[1px] bg-[#37352f]/10" />
+
+                    {/* Category Filter Pills */}
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                        <button
+                            onClick={() => setSelectedCategory("todos")}
+                            className={cn(
+                                "text-xs font-semibold px-3 py-1 rounded-full transition-all border",
+                                selectedCategory === "todos" ? "bg-[#37352f] text-white border-[#37352f]" : "bg-white text-[#37352f]/60 border-[#37352f]/10 hover:border-[#37352f]/40"
+                            )}
+                        >
+                            Todos
+                        </button>
+                        {CATEGORIES.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedCategory(cat.id)}
+                                className={cn(
+                                    "text-xs font-semibold px-3 py-1 rounded-full transition-all border whitespace-nowrap",
+                                    selectedCategory === cat.id ? "bg-[#37352f] text-white border-[#37352f]" : "bg-white text-[#37352f]/60 border-[#37352f]/10 hover:border-[#37352f]/40"
+                                )}
+                            >
+                                {cat.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="ml-auto flex items-center gap-4">
+                        <button
+                            onClick={() => setIsUploadOpen(true)}
+                            className="flex items-center gap-2 px-4 py-1.5 bg-[#2383e2] hover:bg-[#0b66c2] text-white text-sm font-bold rounded-md shadow-sm transition-all"
+                        >
+                            <Plus size={16} /> Nuevo
+                        </button>
+                        <button className="p-1.5 hover:bg-[#F1F1EF] rounded-md text-[#37352f]/40">
+                            <MoreHorizontal size={18} />
+                        </button>
+                    </div>
                 </div>
-            </header>
 
-            <div className="flex-1 overflow-hidden p-8 flex gap-8">
-                {/* Sidebar Filters */}
-                <aside className="w-80 hidden xl:flex flex-col gap-8">
-                    <div className="bg-[#2C2C2A] text-white p-8 border-[1.5px] border-[#2C2C2A] space-y-8 shadow-[12px_12px_0px_0px_rgba(44,44,42,0.1)]">
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40">Estadísticas</h3>
-                        <div className="grid grid-cols-2 gap-6">
-                            {[
-                                { label: 'TOTAL', val: stats.total },
-                                { label: 'PDFS', val: stats.pdfs },
-                                { label: 'EXCELS', val: stats.excels },
-                                { label: 'WORDS', val: stats.words }
-                            ].map(s => (
-                                <div key={s.label}>
-                                    <p className="text-[8px] font-bold opacity-40 mb-1">{s.label}</p>
-                                    <p className="text-2xl font-display">{s.val}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-white border-[1.5px] border-[#2C2C2A]/10 p-8 flex-1 space-y-8 overflow-y-auto">
-                        <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 flex items-center gap-3">
-                                <Filter size={12} /> Categorías
-                            </h4>
-                            <div className="space-y-2">
-                                {['todos', 'nomina', 'contrato', 'cliente', 'proveedor', 'certificado'].map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => setSelectedCategory(cat)}
-                                        className={cn(
-                                            "w-full text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest transition-all border-[1.5px]",
-                                            selectedCategory === cat ? "bg-[#704A38] text-white border-[#704A38]" : "text-[#2C2C2A]/60 border-transparent hover:bg-[#F1F1EF]"
-                                        )}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 flex items-center gap-3">
-                                <Database size={12} /> Entidad Asociada
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                                {['AMAZON', 'GOOGLE', 'DELOITTE', 'LOCAL'].map(e => (
-                                    <button
-                                        key={e}
-                                        onClick={() => setSelectedEntity(selectedEntity === e ? "" : e)}
-                                        className={cn(
-                                            "px-4 py-2 text-[9px] font-bold uppercase tracking-widest transition-all border-[1.5px]",
-                                            selectedEntity === e ? "bg-[#2C2C2A] text-white border-[#2C2C2A]" : "text-[#2C2C2A]/40 border-[#2C2C2A]/10 hover:border-[#2C2C2A]/40"
-                                        )}
-                                    >
-                                        {e}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                {/* Main Content */}
-                <main className="flex-1 bg-white border-[1.5px] border-[#2C2C2A]/10 overflow-hidden flex flex-col relative shadow-[16px_16px_0px_0px_rgba(0,0,0,0.02)]">
+                {/* Inline Database View */}
+                <div className="relative overflow-x-auto custom-scrollbar min-h-[500px]">
                     {loading && (
-                        <div className="absolute inset-0 bg-white/60 z-10 flex flex-col items-center justify-center backdrop-blur-[2px]">
-                            <Loader2 className="w-8 h-8 text-[#704A38] animate-spin mb-4" />
-                            <p className="text-[9px] font-bold uppercase tracking-[0.3em]">Accediendo al servidor...</p>
+                        <div className="absolute inset-0 bg-white/60 z-10 flex flex-col items-center justify-center">
+                            <Loader2 className="w-6 h-6 text-[#2383e2] animate-spin mb-2" />
+                            <p className="text-xs font-bold text-[#37352f]/40 uppercase tracking-widest">Sincronizando Notion...</p>
                         </div>
                     )}
 
-                    <div className="flex-1 overflow-y-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="sticky top-0 bg-[#F1F1EF] z-[5]">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-[#37352f]/10">
+                                <th className="py-2.5 px-3 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider w-[40%]">
+                                    <div className="flex items-center gap-2">
+                                        <FileText size={12} /> Nombre del Archivo
+                                    </div>
+                                </th>
+                                <th className="py-2.5 px-3 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider w-[15%]">
+                                    <div className="flex items-center gap-2">
+                                        <Tag size={12} /> Categoría
+                                    </div>
+                                </th>
+                                <th className="py-2.5 px-3 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider w-[15%]">
+                                    <div className="flex items-center gap-2">
+                                        <Database size={12} /> Entidad
+                                    </div>
+                                </th>
+                                <th className="py-2.5 px-3 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider w-[15%]">
+                                    <div className="flex items-center gap-2">
+                                        <Calendar size={12} /> Fecha
+                                    </div>
+                                </th>
+                                <th className="py-2.5 px-3 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider text-right w-[15%]">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#37352f]/5">
+                            {docs.length === 0 && !loading && (
                                 <tr>
-                                    <th className="p-6 text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 border-b-[1.5px] border-[#2C2C2A]/10">Archivo</th>
-                                    <th className="p-6 text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 border-b-[1.5px] border-[#2C2C2A]/10">Categoría</th>
-                                    <th className="p-6 text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 border-b-[1.5px] border-[#2C2C2A]/10">Entidad</th>
-                                    <th className="p-6 text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 border-b-[1.5px] border-[#2C2C2A]/10">Fecha</th>
-                                    <th className="p-6 text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40 border-b-[1.5px] border-[#2C2C2A]/10 text-right">Acciones</th>
+                                    <td colSpan={5} className="py-20 text-center">
+                                        <div className="flex flex-col items-center opacity-30">
+                                            <FileIcon size={40} className="mb-4 text-[#37352f]/20" />
+                                            <p className="text-sm font-medium">No hay documentos en esta vista</p>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {docs.length === 0 && !loading && (
-                                    <tr>
-                                        <td colSpan={5} className="p-20 text-center">
-                                            <div className="flex flex-col items-center opacity-20">
-                                                <FileIcon size={48} className="mb-4" />
-                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em]">No se han encontrado documentos</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                                {docs.map((doc) => (
-                                    <tr key={doc.id} className="group hover:bg-[#FAFAF8] transition-colors">
-                                        <td className="p-6 border-b border-[#2C2C2A]/5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-white border border-[#2C2C2A]/10 flex items-center justify-center shadow-sm">
+                            )}
+                            {docs.map((doc) => {
+                                const catStyle = CATEGORIES.find(c => c.id === doc.categoria)?.color || 'bg-gray-100 text-gray-700';
+                                return (
+                                    <tr key={doc.id} className="group hover:bg-[#F1F1EF]/50 transition-colors">
+                                        <td className="py-3 px-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="min-w-[24px]">
                                                     {getFileIcon(doc.formato)}
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-[#2C2C2A]">{doc.nombre_archivo}</p>
-                                                    <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest">{doc.formato}</p>
-                                                </div>
+                                                <span className="text-sm font-semibold truncate hover:text-[#2383e2] cursor-pointer" onClick={() => descargarDocumento(doc.url_storage)}>
+                                                    {doc.nombre_archivo}
+                                                </span>
                                             </div>
                                         </td>
-                                        <td className="p-6 border-b border-[#2C2C2A]/5">
-                                            <span className="px-3 py-1 bg-[#F1F1EF] text-[9px] font-bold uppercase tracking-widest border border-[#2C2C2A]/10">
-                                                {doc.categoria}
+                                        <td className="py-3 px-3">
+                                            <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-sm whitespace-nowrap", catStyle)}>
+                                                {doc.categoria.toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="p-6 border-b border-[#2C2C2A]/5">
-                                            <p className="text-[10px] font-bold text-[#2C2C2A]/60">{doc.cliente_asociado || '---'}</p>
+                                        <td className="py-3 px-3">
+                                            <div className="flex items-center gap-2 text-sm text-[#37352f]/60 italic font-medium">
+                                                {doc.cliente_asociado || '--'}
+                                            </div>
                                         </td>
-                                        <td className="p-6 border-b border-[#2C2C2A]/5">
-                                            <p className="text-[10px] font-medium text-[#2C2C2A]/40">
-                                                {new Date(doc.fecha_subida).toLocaleDateString('es-ES')}
-                                            </p>
+                                        <td className="py-3 px-3 text-sm text-[#37352f]/40 font-medium">
+                                            {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </td>
-                                        <td className="p-6 border-b border-[#2C2C2A]/5 text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <td className="py-3 px-3 text-right">
+                                            <div className="flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => descargarDocumento(doc.url_storage)}
-                                                    className="p-3 border border-[#2C2C2A]/10 hover:bg-[#2C2C2A] hover:text-white transition-all text-[#2C2C2A]/40"
+                                                    className="p-1.5 hover:bg-[#37352f]/5 rounded text-[#37352f]/60 hover:text-[#37352f]"
                                                 >
                                                     <Download size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(doc.id)}
-                                                    className="p-3 border border-[#2C2C2A]/10 hover:bg-error hover:text-white transition-all text-[#2C2C2A]/40 hover:border-error"
+                                                    className="p-1.5 hover:bg-red-50 rounded text-[#37352f]/60 hover:text-red-600"
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </main>
+                                );
+                            })}
+                            {/* New Item Placeholder Row */}
+                            <tr className="hover:bg-[#F1F1EF]/50 cursor-pointer group transition-colors" onClick={() => setIsUploadOpen(true)}>
+                                <td colSpan={5} className="py-3 px-3 text-sm text-[#37352f]/30 font-medium flex items-center gap-2">
+                                    <Plus size={14} className="opacity-50" />
+                                    <span>Agregar un nuevo documento...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Notion Statistics Summary */}
+                <div className="mt-12 grid grid-cols-4 gap-6 border-t border-[#37352f]/10 pt-8 pb-20">
+                    {[
+                        { label: 'Archivos Totales', val: stats.total, icon: <FileText size={16} />, color: 'text-blue-500' },
+                        { label: 'Documentos PDF', val: stats.pdfs, icon: <CheckCircle2 size={16} />, color: 'text-red-500' },
+                        { label: 'Hojas Excel', val: stats.excels, icon: <ExcelIcon size={16} />, color: 'text-green-600' },
+                        { label: 'Planillas Word', val: stats.words, icon: <WordIcon size={16} />, color: 'text-blue-600' }
+                    ].map((s, i) => (
+                        <div key={i} className="space-y-2">
+                            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#37352f]/40">
+                                {s.icon} {s.label}
+                            </div>
+                            <div className="text-3xl font-bold tracking-tight">{s.val}</div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            {/* Upload Modal */}
+            {/* Notion Style Upload Modal */}
             <AnimatePresence>
                 {isUploadOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -293,29 +323,26 @@ export default function DocumentsPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsUploadOpen(false)}
-                            className="absolute inset-0 bg-[#2C2C2A]/40 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/5 backdrop-blur-[2px]"
                         />
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white border-[1.5px] border-[#2C2C2A] w-full max-w-lg relative z-10 shadow-[24px_24px_0px_0px_rgba(44,44,42,0.15)]"
+                            initial={{ scale: 0.98, opacity: 0, y: 10 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.98, opacity: 0, y: 10 }}
+                            className="bg-white w-full max-w-xl relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-lg border border-[#37352f]/10 overflow-hidden"
                         >
                             <form onSubmit={handleUpload}>
-                                <div className="p-8 border-b-[1.5px] border-[#2C2C2A] bg-[#2C2C2A] text-white flex justify-between items-center">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-white/10 border border-white/20 flex items-center justify-center">
-                                            <Upload size={20} />
-                                        </div>
-                                        <h3 className="text-xl font-display uppercase tracking-tight">Nueva Subida</h3>
+                                <div className="p-6 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Share2 size={18} className="text-[#37352f]/40" />
+                                        <span className="text-sm font-bold">Subir a la Base de Datos</span>
                                     </div>
-                                    <button type="button" onClick={() => setIsUploadOpen(false)} className="hover:rotate-90 transition-transform"><X size={20} /></button>
+                                    <button type="button" onClick={() => setIsUploadOpen(false)} className="text-[#37352f]/40 hover:text-[#37352f]"><X size={20} /></button>
                                 </div>
 
-                                <div className="p-10 space-y-8">
+                                <div className="p-10 pt-4 space-y-10">
                                     <div className="space-y-4">
-                                        <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40">Archivo (PDF, XLSX, DOCX)</label>
-                                        <div className="relative border-[1.5px] border-dashed border-[#2C2C2A]/20 p-10 flex flex-col items-center justify-center bg-[#F1F1EF] hover:bg-[#F1F1EF]/50 transition-colors group cursor-pointer">
+                                        <div className="relative border-2 border-dashed border-[#F1F1EF] rounded-lg p-12 flex flex-col items-center justify-center hover:border-[#2383e2]/30 hover:bg-[#F1F1EF]/30 transition-all cursor-pointer group">
                                             <input
                                                 required
                                                 type="file"
@@ -324,56 +351,79 @@ export default function DocumentsPage() {
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                             />
                                             {file ? (
-                                                <div className="flex flex-col items-center">
-                                                    <FileText className="text-[#704A38] mb-2" size={32} />
-                                                    <p className="text-xs font-bold text-[#2C2C2A]">{file.name}</p>
-                                                    <p className="text-[9px] font-bold opacity-40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                <div className="text-center">
+                                                    <div className="w-16 h-16 bg-[#F1F1EF] rounded-lg flex items-center justify-center mx-auto mb-4">
+                                                        {getFileIcon(file.name.split('.').pop() || '')}
+                                                    </div>
+                                                    <p className="text-sm font-bold text-[#37352f]">{file.name}</p>
+                                                    <p className="text-[10px] font-medium text-[#37352f]/40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <Upload className="text-[#2C2C2A]/20 mb-4 group-hover:scale-110 transition-transform" size={32} />
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#2C2C2A]/40">Arrastra o haz click para seleccionar</p>
+                                                    <div className="w-16 h-16 bg-[#F1F1EF] rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                                        <Plus size={24} className="text-[#37352f]/20" />
+                                                    </div>
+                                                    <p className="text-sm font-bold opacity-60">Selecciona un archivo</p>
+                                                    <p className="text-[11px] font-medium opacity-30 mt-1 uppercase tracking-widest text-[#37352f]">PDF, Excel o Word</p>
                                                 </>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40">Categoría *</label>
-                                            <select
-                                                required
-                                                value={category}
-                                                onChange={e => setCategory(e.target.value as any)}
-                                                className="w-full bg-[#F1F1EF] border-[1.5px] border-[#2C2C2A]/10 p-4 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#704A38] transition-colors appearance-none"
-                                            >
-                                                <option value="nomina">Nómina</option>
-                                                <option value="contrato">Contrato</option>
-                                                <option value="cliente">Cliente</option>
-                                                <option value="proveedor">Proveedor</option>
-                                                <option value="certificado">Certificado</option>
-                                            </select>
+                                    {/* Inline Property Editor Look */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-24 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider flex items-center gap-2">
+                                                <Tag size={12} /> Categoría
+                                            </div>
+                                            <div className="flex-1">
+                                                <select
+                                                    required
+                                                    value={category}
+                                                    onChange={e => setCategory(e.target.value as any)}
+                                                    className="w-full bg-[#F1F1EF] border-none rounded-md p-2.5 text-xs font-bold outline-none hover:bg-[#E8E8E4] transition-colors appearance-none cursor-pointer"
+                                                >
+                                                    {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#2C2C2A]/40">Entidad (Opcional)</label>
-                                            <input
-                                                type="text"
-                                                value={client}
-                                                onChange={e => setClient(e.target.value)}
-                                                className="w-full bg-[#F1F1EF] border-[1.5px] border-[#2C2C2A]/10 p-4 text-[10px] font-bold outline-none focus:border-[#704A38] transition-colors"
-                                                placeholder="Ej: Amazon"
-                                            />
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-24 text-[11px] font-semibold text-[#37352f]/40 uppercase tracking-wider flex items-center gap-2">
+                                                <Database size={12} /> Entidad
+                                            </div>
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    value={client}
+                                                    onChange={e => setClient(e.target.value)}
+                                                    className="w-full bg-[#F1F1EF] border-none rounded-md p-2.5 text-xs font-bold outline-none focus:bg-[#E8E8E4] transition-all"
+                                                    placeholder="Ej: Amazon"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="pt-8 border-t-[1.5px] border-[#2C2C2A]/10">
+                                    <div className="flex justify-end gap-3 pt-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsUploadOpen(false)}
+                                            className="px-4 py-2 hover:bg-[#F1F1EF] rounded-md text-xs font-bold transition-all text-[#37352f]/60"
+                                        >
+                                            Cancelar
+                                        </button>
                                         <button
                                             disabled={uploading || !file}
                                             type="submit"
-                                            className="w-full bg-[#704A38] text-white py-5 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-black transition-all flex items-center justify-center gap-4 disabled:opacity-50"
+                                            className="px-6 py-2 bg-[#2383e2] hover:bg-[#0b66c2] text-white text-xs font-bold rounded-md shadow-sm transition-all flex items-center gap-2 disabled:opacity-40"
                                         >
-                                            {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-                                            {uploading ? 'Subiendo archivo...' : 'Sincronizar con Storage'}
+                                            {uploading ? (
+                                                <>
+                                                    <Loader2 size={14} className="animate-spin" />
+                                                    Sincronizando...
+                                                </>
+                                            ) : (
+                                                'Guardar registro'
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -382,6 +432,30 @@ export default function DocumentsPage() {
                     </div>
                 )}
             </AnimatePresence>
+
+            <style jsx global>{`
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .custom-scrollbar::-webkit-scrollbar {
+                    height: 8px;
+                    width: 8px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #F1F1EF;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #E8E8E4;
+                }
+            `}</style>
         </div>
     );
 }
