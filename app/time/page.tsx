@@ -153,20 +153,34 @@ export default function CalendarPage() {
         }
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("No hay sesión activa");
+
+            const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
+
             if (selectedEvent?.id) {
-                await actualizarEvento(selectedEvent.id, {
-                    ...formData,
-                    color_hex: getColorPorTipo(formData.tipo_evento || 'evento'),
-                    categoria: getCategoriaPorTipo(formData.tipo_evento || 'evento')
-                });
+                const { error } = await supabase
+                    .from('calendario_eventos')
+                    .update({
+                        ...formData,
+                        empleado_id: emp?.id,
+                        color_hex: getColorPorTipo(formData.tipo_evento || 'evento'),
+                        categoria: getCategoriaPorTipo(formData.tipo_evento || 'evento')
+                    })
+                    .eq('id', selectedEvent.id);
+                if (error) throw error;
             } else {
-                await crearEvento(formData);
+                const result = await crearEvento({
+                    ...formData,
+                    empleado_id: emp?.id
+                });
+                if (!result) throw new Error("Error al crear el registro en la base de datos");
             }
             setIsModalOpen(false);
             await loadEvents();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Error al guardar el evento. ¿Ejecutaste el SQL?");
+            alert("Error al guardar: " + (err.message || "Error desconocido"));
         } finally {
             setLoading(false);
         }
@@ -386,10 +400,12 @@ export default function CalendarPage() {
                                         <select
                                             value={formData.tipo_evento}
                                             onChange={e => setFormData({ ...formData, tipo_evento: e.target.value as any })}
-                                            className="bg-transparent border-none text-sm font-bold uppercase tracking-widest outline-none cursor-pointer hover:text-white transition-colors"
+                                            className="bg-white/10 border border-white/20 text-white rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-widest outline-none cursor-pointer hover:bg-white/20 transition-all"
                                         >
                                             {EVENT_TYPES.map(t => (
-                                                <option key={t.id} value={t.id} className="bg-charcoal text-white">{t.label}</option>
+                                                <option key={t.id} value={t.id} className="bg-[#1e1e1e] text-white">
+                                                    {t.label}
+                                                </option>
                                             ))}
                                         </select>
                                         <ChevronLeft size={16} className="rotate-[-90deg] text-white/40" />
@@ -477,10 +493,29 @@ export default function CalendarPage() {
                                             />
                                         </div>
 
-                                        {/* Documents */}
-                                        <div className="flex items-center gap-4 group">
-                                            <FileText className="text-white/40 group-hover:text-primary transition-colors" size={20} />
-                                            <span className="text-sm font-medium text-white/40 hover:text-white cursor-pointer transition-colors">Documentos y anotador con IA</span>
+                                        {/* AI Notebook Section */}
+                                        <div className="space-y-4 pt-4 border-t border-white/10">
+                                            <div className="flex items-center gap-3">
+                                                <FileText className="text-primary" size={20} />
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-white/40">Documentos y Anotador con IA</label>
+                                            </div>
+                                            <textarea
+                                                value={formData.descripcion}
+                                                onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
+                                                placeholder="Escribe aquí tus notas o resumen de la IA..."
+                                                rows={4}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg p-4 text-sm font-medium outline-none resize-none focus:bg-white/10 transition-all text-white/80 placeholder:text-white/20"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const mockAI = "Resumen IA: Se ha programado esta sesión para discutir los objetivos del Q1. Temas clave: Productividad, Bienestar y Crecimiento.";
+                                                    setFormData({ ...formData, descripcion: (formData.descripcion ? formData.descripcion + "\n\n" : "") + mockAI });
+                                                }}
+                                                className="w-full py-2 bg-primary/20 text-primary border border-primary/30 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-primary/30 transition-all"
+                                            >
+                                                Generar Resumen con IA
+                                            </button>
                                         </div>
 
                                         {/* Location */}
