@@ -9,6 +9,7 @@ export interface Documento {
     tipo: 'Nómina' | 'Contrato Laboral' | 'Modelo 145' | 'Certificado de Empresa' | 'Justificante Médico' | 'Gasto/Ticket';
     descripcion?: string;
     fecha_subida: string;
+    estado?: 'Final' | 'Borrador' | 'Archivado';
 }
 
 export async function subirDocumento(
@@ -55,7 +56,8 @@ export async function subirDocumento(
             url_storage: publicUrl,
             formato: extension as any,
             tipo: metadata.tipo,
-            descripcion: metadata.descripcion
+            descripcion: metadata.descripcion,
+            estado: 'Borrador'
         }])
         .select()
         .single();
@@ -74,6 +76,7 @@ export async function obtenerDocumentos(filtros?: {
     persona_id?: string;
     fecha_desde?: string;
     fecha_hasta?: string;
+    estado?: string;
 }): Promise<Documento[]> {
     let query = supabase.from('documentos').select('*').order('fecha_subida', { ascending: false });
 
@@ -83,6 +86,10 @@ export async function obtenerDocumentos(filtros?: {
 
     if (filtros?.tipo && filtros.tipo !== 'todos') {
         query = query.eq('tipo', filtros.tipo);
+    }
+
+    if (filtros?.estado && filtros.estado !== 'todos') {
+        query = query.eq('estado', filtros.estado);
     }
 
     if (filtros?.search) {
@@ -126,6 +133,22 @@ export function descargarDocumento(url: string) {
     window.open(url, '_blank');
 }
 
+export async function actualizarDocumento(id: string, updates: Partial<Documento>): Promise<void> {
+    const { error } = await supabase
+        .from('documentos')
+        .update(updates)
+        .eq('id', id);
+
+    if (error) {
+        console.error('Error actualizando documento:', error);
+        throw error;
+    }
+}
+
+export async function actualizarDescripcion(id: string, descripcion: string): Promise<void> {
+    return actualizarDocumento(id, { descripcion });
+}
+
 export async function obtenerEstadisticas(persona_id?: string) {
     let query = supabase.from('documentos').select('formato');
     if (persona_id) {
@@ -140,16 +163,4 @@ export async function obtenerEstadisticas(persona_id?: string) {
         words: data?.filter(d => d.formato === 'docx').length || 0
     };
     return stats;
-}
-
-export async function actualizarDescripcion(id: string, descripcion: string): Promise<void> {
-    const { error } = await supabase
-        .from('documentos')
-        .update({ descripcion })
-        .eq('id', id);
-
-    if (error) {
-        console.error('Error actualizando descripción:', error);
-        throw error;
-    }
 }

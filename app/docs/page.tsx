@@ -30,7 +30,8 @@ import {
     Clock,
     Circle,
     CheckCircle2,
-    Archive
+    Archive,
+    Type
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -40,7 +41,7 @@ import {
     subirDocumento,
     eliminarDocumento,
     descargarDocumento,
-    actualizarDescripcion,
+    actualizarDocumento,
     Documento
 } from "@/lib/documentos";
 
@@ -54,16 +55,10 @@ const TIPOS = [
     { id: 'Gasto/Ticket', label: 'Gasto/Ticket', color: 'bg-[#FEF7D1] text-[#715D1C]' },
 ];
 
-const STATUS_OPTS = [
-    { id: 'Final', label: 'Final', icon: CheckCircle2, color: 'text-green-600 bg-green-50' },
-    { id: 'Borrador', label: 'Borrador', icon: Circle, color: 'text-blue-500 bg-blue-50' },
-    { id: 'Archivado', label: 'Archivado', icon: Archive, color: 'text-gray-400 bg-gray-50' },
-];
-
-const DEPTS = [
-    { id: 'HR', label: 'Human Resources', color: 'bg-[#FDE2E2] text-[#9B2C2C]' },
-    { id: 'FIN', label: 'Finance', color: 'bg-[#E0F2FE] text-[#0369A1]' },
-    { id: 'ENG', label: 'Engineering', color: 'bg-[#F3E8FF] text-[#6B21A8]' },
+const ESTADOS = [
+    { id: 'Final', label: 'Finalizado', icon: CheckCircle2, color: 'bg-[#E1F2E8] text-[#1D5E3F]' },
+    { id: 'Borrador', label: 'Borrador', icon: Circle, color: 'bg-[#FFF2E5] text-[#A66112]' },
+    { id: 'Archivado', label: 'Archivado', icon: Archive, color: 'bg-[#F1F1EF] text-[#37352f]/40' },
 ];
 
 export default function DocumentsPage() {
@@ -79,9 +74,11 @@ export default function DocumentsPage() {
     const [sortConfig, setSortConfig] = useState<{ key: keyof Documento; direction: 'asc' | 'desc' } | null>({ key: 'fecha_subida', direction: 'desc' });
     const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
     const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+    // --- Side-Peek Editor State ---
     const [selectedDoc, setSelectedDoc] = useState<Documento | null>(null);
-    const [editingDesc, setEditingDesc] = useState("");
-    const [isSavingDesc, setIsSavingDesc] = useState(false);
+    const [editValues, setEditValues] = useState<Partial<Documento>>({});
+    const [isSaving, setIsSaving] = useState(false);
 
     // --- References ---
     const filterRef = useRef<HTMLDivElement>(null);
@@ -140,25 +137,38 @@ export default function DocumentsPage() {
         setSortConfig({ key, direction });
     };
 
-    const handleSaveDescription = async () => {
+    const handleOpenDoc = (doc: Documento) => {
+        setSelectedDoc(doc);
+        setEditValues({
+            nombre_archivo: doc.nombre_archivo,
+            tipo: doc.tipo,
+            estado: doc.estado || 'Borrador',
+            descripcion: doc.descripcion || ""
+        });
+    };
+
+    const handleUpdateDoc = async () => {
         if (!selectedDoc) return;
-        setIsSavingDesc(true);
+        setIsSaving(true);
         try {
-            await actualizarDescripcion(selectedDoc.id, editingDesc);
-            setDocs(docs.map(d => d.id === selectedDoc.id ? { ...d, descripcion: editingDesc } : d));
-            setSelectedDoc({ ...selectedDoc, descripcion: editingDesc });
+            await actualizarDocumento(selectedDoc.id, editValues);
+            // Update local list
+            setDocs(docs.map(d => d.id === selectedDoc.id ? { ...d, ...editValues } : d));
+            setSelectedDoc({ ...selectedDoc, ...editValues });
+            // Show toast or feedback? For now just silent success
         } catch (err) {
-            alert("Error al guardar descripción");
+            alert("Error al actualizar el documento");
         } finally {
-            setIsSavingDesc(false);
+            setIsSaving(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("¿Eliminar este documento?")) return;
+        if (!confirm("¿Eliminar este documento definitivamente?")) return;
         try {
             await eliminarDocumento(id);
             setDocs(docs.filter(d => d.id !== id));
+            if (selectedDoc?.id === id) setSelectedDoc(null);
         } catch (err) {
             alert("Error al eliminar");
         }
@@ -190,19 +200,19 @@ export default function DocumentsPage() {
                                 <FileText className="opacity-10" /> Documentos de Empresa
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] font-black uppercase text-[#714A38] tracking-[0.3em]">Protocol 5 Sovereign DB</span>
+                                <span className="text-[10px] font-black uppercase text-[#714A38] tracking-[0.3em]">Protocol 5 Active Database</span>
                                 <div className="w-1 h-1 bg-[#2C2C2A]/20 rounded-full" />
-                                <span className="text-[10px] font-bold opacity-30">v3.0 Production Ready</span>
+                                <span className="text-[10px] font-bold opacity-30">Full Interactive v3.1</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Notion Control Toolbar */}
+                {/* Control Toolbar */}
                 <div className="flex items-center justify-between py-2 border-b-[1.5px] border-[#2C2C2A]/10 mb-2">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-[#714A38] text-white rounded-[3px] text-[12px] font-bold border-[1.5px] border-[#2C2C2A] shadow-sm cursor-default">
-                            <ExcelIcon size={14} /> Vista de Propiedades
+                            <ExcelIcon size={14} /> Base de Datos
                         </div>
                         <div className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium opacity-40 hover:opacity-100 cursor-pointer transition-opacity border-[1.5px] border-transparent hover:border-[#2C2C2A]/10 rounded-[3px]">
                             <Plus size={14} /> Nueva vista
@@ -210,19 +220,17 @@ export default function DocumentsPage() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Dynamic Search Bar */}
                         <div className="relative group mr-2">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#37352f]/30 group-focus-within:text-[#714A38]" size={14} />
                             <input
                                 type="text"
-                                placeholder="Search documents..."
+                                placeholder="Buscar en la base..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-9 pr-4 py-1.5 bg-transparent border-none text-[13px] outline-none w-48 focus:w-80 transition-all placeholder:opacity-30"
                             />
                         </div>
 
-                        {/* Filter Interface (Popover) */}
                         <div className="relative" ref={filterRef}>
                             <button
                                 onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
@@ -231,7 +239,7 @@ export default function DocumentsPage() {
                                     hasActiveFilters ? "bg-[#714A38]/5 border-[#714A38] text-[#714A38]" : "border-transparent hover:bg-[#F1F1EF] text-[#37352f]/60"
                                 )}
                             >
-                                <FilterIcon size={14} /> Filter
+                                <FilterIcon size={14} /> Filtrar
                             </button>
 
                             <AnimatePresence>
@@ -244,36 +252,35 @@ export default function DocumentsPage() {
                                     >
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between border-b pb-4 border-[#2C2C2A]/10">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-[#2C2C2A]/40">Reglas de Propiedad</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-[#2C2C2A]/40">Reglas Activas</span>
                                                 {hasActiveFilters && (
                                                     <button
                                                         onClick={() => { setSelectedTipo('todos'); setFechaDesde(''); setFechaHasta(''); setSearch(''); }}
                                                         className="text-[10px] font-black uppercase text-red-500 hover:underline"
                                                     >
-                                                        Reseteo Total
+                                                        Resetear
                                                     </button>
                                                 )}
                                             </div>
 
-                                            {/* Property Rules */}
                                             <div className="space-y-4">
                                                 <div className="grid gap-2">
                                                     <label className="text-[11px] font-bold text-[#37352f]/50 flex items-center gap-2 uppercase tracking-tight">
-                                                        <Tag size={12} /> Categoría es...
+                                                        <Tag size={12} /> Categoría
                                                     </label>
                                                     <select
                                                         value={selectedTipo}
                                                         onChange={(e) => setSelectedTipo(e.target.value)}
                                                         className="w-full bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-2 text-[12px] font-medium outline-none focus:border-[#714A38] rounded-sm"
                                                     >
-                                                        <option value="todos">Cualquier categoría</option>
+                                                        <option value="todos">Cualquiera</option>
                                                         {TIPOS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                                                     </select>
                                                 </div>
 
                                                 <div className="grid gap-2">
                                                     <label className="text-[11px] font-bold text-[#37352f]/50 flex items-center gap-2 uppercase tracking-tight">
-                                                        <Calendar size={12} /> Rango de Fecha...
+                                                        <Calendar size={12} /> Rango de Fecha
                                                     </label>
                                                     <div className="grid grid-cols-2 gap-2">
                                                         <input
@@ -297,23 +304,22 @@ export default function DocumentsPage() {
                             </AnimatePresence>
                         </div>
 
-                        {/* Notion Split New Button */}
                         <div className="flex items-center ml-2 group/new">
                             <button
                                 onClick={() => setIsUploadOpen(true)}
-                                className="bg-[#714A38] hover:bg-[#5a3b2d] text-white text-[13px] font-bold px-4 py-1.5 rounded-l-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-r-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                                className="bg-[#714A38] hover:bg-[#5a3b2d] text-white text-[13px] font-bold px-4 py-1.5 rounded-l-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-r-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)]"
                             >
                                 Nuevo Documento
                             </button>
                             <div className="w-[1.5px] h-[32px] bg-[#2C2C2A]/30 self-stretch" />
-                            <button className="bg-[#714A38] hover:bg-[#5a3b2d] text-white px-2 py-1.5 rounded-r-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-l-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)] active:shadow-none active:translate-x-1 active:translate-y-1">
+                            <button className="bg-[#714A38] hover:bg-[#5a3b2d] text-white px-2 py-1.5 rounded-r-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-l-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)]">
                                 <ChevronDown size={14} />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Filter Pills Display */}
+                {/* Filter Pills */}
                 <div className="flex flex-wrap items-center gap-2 mb-6 min-h-[32px]">
                     <AnimatePresence>
                         {selectedTipo !== "todos" && (
@@ -332,11 +338,11 @@ export default function DocumentsPage() {
                 </div>
             </div>
 
-            {/* --- THE SOVEREIGN GRID SYSTEM --- */}
-            <div className="max-w-full mx-auto px-12">
+            {/* --- DATA GRID --- */}
+            <div className="max-w-full mx-auto px-12 pb-24">
                 <div className="border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-hidden rounded-[3px]">
-                    {/* Grid Header */}
-                    <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
+                    {/* Header */}
+                    <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
                         <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
                             <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm" />
                         </div>
@@ -344,7 +350,7 @@ export default function DocumentsPage() {
                             onClick={() => handleSort('nombre_archivo')}
                             className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
                         >
-                            <span className="scale-110 tracking-tighter opacity-60">Aa</span> DOCUMENTO
+                            <Type size={14} className="opacity-40" /> NOMBRE
                             {sortConfig?.key === 'nombre_archivo' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                         </div>
                         <div
@@ -361,18 +367,18 @@ export default function DocumentsPage() {
                             <User size={14} className="opacity-40" /> PROPIETARIO
                         </div>
                         <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
-                            <AlignLeft size={14} className="opacity-40" /> COMENTARIO
+                            <AlignLeft size={14} className="opacity-40" /> DESCRIPCIÓN
                         </div>
                         <div
                             onClick={() => handleSort('fecha_subida')}
                             className="p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
                         >
-                            <Clock size={14} className="opacity-40" /> CREACIÓN
+                            <Clock size={14} className="opacity-40" /> CREADO
                             {sortConfig?.key === 'fecha_subida' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                         </div>
                     </div>
 
-                    {/* Grid Body */}
+                    {/* Body */}
                     <div className="divide-y-[1.5px] divide-[#2C2C2A]/10">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center p-24 gap-4">
@@ -381,51 +387,42 @@ export default function DocumentsPage() {
                             </div>
                         ) : docs.length === 0 ? (
                             <div className="flex flex-col items-center justify-center p-32 gap-6 bg-[#FAFAF8]/50">
-                                <div className="w-20 h-20 bg-[#2C2C2A]/5 rounded-full flex items-center justify-center border-[1.5px] border-dashed border-[#2C2C2A]/10">
-                                    <SearchX size={40} className="opacity-10" />
-                                </div>
+                                <SearchX size={40} className="opacity-10" />
                                 <div className="text-center">
-                                    <p className="text-[16px] font-black uppercase tracking-tight">Database: No matches</p>
-                                    <p className="text-[12px] opacity-40 mt-1 font-medium italic">All filters returned zero assets.</p>
+                                    <p className="text-[16px] font-black uppercase tracking-tight">VISTA VACÍA</p>
+                                    <p className="text-[12px] opacity-40 mt-1 font-medium italic">No hay documentos con estos criterios.</p>
                                 </div>
-                                <button
-                                    onClick={() => { setSelectedTipo('todos'); setFechaDesde(''); setFechaHasta(''); setSearch(''); }}
-                                    className="px-8 py-2.5 border-[1.5px] border-[#2C2C2A] text-[11px] font-black uppercase tracking-widest hover:bg-[#2C2C2A] hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(44,44,42,0.1)] hover:shadow-none"
-                                >
-                                    Clear and Refresh
-                                </button>
                             </div>
                         ) : docs.map((doc) => (
                             <motion.div
                                 layout
                                 key={doc.id}
-                                className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none border-b-[1.5px] border-transparent hover:border-[#2C2C2A]/5"
+                                className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none group/item"
                             >
                                 <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
                                     <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm opacity-0 group-hover/row:opacity-100 transition-opacity" />
                                 </div>
 
-                                {/* Property: Name */}
+                                {/* Prop: Name */}
                                 <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 relative flex items-center gap-3 overflow-hidden">
                                     {getFileIcon(doc.formato)}
                                     <span
                                         className="text-[13px] font-bold text-[#2C2C2A] truncate hover:underline underline-offset-4 cursor-pointer"
-                                        onClick={() => descargarDocumento(doc.url_storage)}
+                                        onClick={() => handleOpenDoc(doc)}
                                     >
                                         {doc.nombre_archivo}
                                     </span>
 
-                                    {/* Hyper-Notion Hover ACTION */}
                                     <div
-                                        onClick={() => { setSelectedDoc(doc); setEditingDesc(doc.descripcion || ""); }}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 bg-white border-[1.5px] border-[#2C2C2A] rounded-[3px] px-2 py-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-[#714A38] hover:text-white transition-all shadow-sm"
+                                        onClick={() => handleOpenDoc(doc)}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 bg-white border-[1.5px] border-[#2C2C2A] rounded-[3px] px-2 py-1 flex items-center gap-2 text-[10px] font-black uppercase cursor-pointer hover:bg-[#714A38] hover:text-white transition-all shadow-sm"
                                     >
-                                        <Maximize2 size={12} /> Open Page
+                                        <Maximize2 size={12} /> OPEN
                                     </div>
                                 </div>
 
-                                {/* Property: Type */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => setSelectedDoc(doc)}>
+                                {/* Prop: Type */}
+                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
                                     <div className={cn(
                                         "inline-flex items-center px-2 py-0.5 rounded-[3px] text-[11px] font-black uppercase tracking-tight",
                                         TIPOS.find(t => t.id === doc.tipo)?.color || 'bg-gray-100 text-gray-700'
@@ -434,37 +431,44 @@ export default function DocumentsPage() {
                                     </div>
                                 </div>
 
-                                {/* Property: Status (Simulated relation) */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => setSelectedDoc(doc)}>
-                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-[3px] bg-[#F1F1EF]/50 hover:bg-[#F1F1EF] border border-[#2C2C2A]/5 transition-colors group/status">
-                                        <CheckCircle2 size={12} className="text-green-600 opacity-60" />
-                                        <span className="text-[12px] font-bold text-[#2C2C2A]/80">Finalizado</span>
-                                    </div>
+                                {/* Prop: Status */}
+                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                    {doc.estado ? (
+                                        <div className={cn(
+                                            "flex items-center gap-1.5 px-2 py-1 rounded-[3px] border border-transparent transition-colors",
+                                            ESTADOS.find(e => e.id === doc.estado)?.color
+                                        )}>
+                                            {React.createElement(ESTADOS.find(e => e.id === doc.estado)?.icon || Circle, { size: 12 })}
+                                            <span className="text-[12px] font-bold">{ESTADOS.find(e => e.id === doc.estado)?.label}</span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[12px] opacity-20 italic">No definido</span>
+                                    )}
                                 </div>
 
-                                {/* Property: User/Owner */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => setSelectedDoc(doc)}>
+                                {/* Prop: Owner */}
+                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[10px] font-black border border-[#2C2C2A]">R</div>
                                         <span className="text-[12px] font-bold opacity-60">Rafael I.</span>
                                     </div>
                                 </div>
 
-                                {/* Property: Description (Preview) */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => { setSelectedDoc(doc); setEditingDesc(doc.descripcion || ""); }}>
-                                    <span className="text-[12px] text-[#2C2C2A]/40 truncate italic">
-                                        {doc.descripcion || "Empty property..."}
+                                {/* Prop: Description */}
+                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                    <span className="text-[12px] text-[#2C2C2A]/40 truncate">
+                                        {doc.descripcion || ""}
                                     </span>
                                 </div>
 
-                                {/* Property: Date (Formatted) */}
-                                <div className="p-3 flex items-center justify-between group/cell" onClick={() => setSelectedDoc(doc)}>
+                                {/* Prop: Date */}
+                                <div className="p-3 flex items-center justify-between group/cell" onClick={() => handleOpenDoc(doc)}>
                                     <span className="text-[12px] font-bold tabular-nums opacity-60">
-                                        {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                                        className="opacity-0 group-hover/row:opacity-100 p-1.5 hover:bg-red-50 text-red-500 rounded-sm transition-all"
+                                        className="opacity-0 group-hover/row:opacity-100 p-1 hover:bg-red-50 text-red-500 transition-all rounded-sm"
                                     >
                                         <Trash2 size={14} />
                                     </button>
@@ -472,160 +476,154 @@ export default function DocumentsPage() {
                             </motion.div>
                         ))}
 
-                        {/* Inline Adding Trigger */}
                         <div
                             onClick={() => setIsUploadOpen(true)}
-                            className="grid grid-cols-[38px_1fr] border-t-[1.5px] border-[#2C2C2A]/10 hover:bg-[#F1F1EF] cursor-pointer transition-colors text-[#37352f]/20 group"
+                            className="grid grid-cols-[38px_1fr] hover:bg-[#F1F1EF] cursor-pointer transition-colors text-[#37352f]/20 group"
                         >
                             <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center justify-center">
-                                <Plus size={18} className="group-hover:scale-125 transition-transform" />
+                                <Plus size={18} />
                             </div>
-                            <div className="p-3 text-[14px] font-bold uppercase tracking-widest opacity-40 group-hover:opacity-100">Click to add new page</div>
+                            <div className="p-3 text-[14px] font-bold uppercase tracking-widest opacity-40 group-hover:opacity-100">Nueva línea de datos...</div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Database Statistics */}
-                <div className="mt-12 flex items-center justify-between text-[10px] font-black uppercase text-[#2C2C2A]/20 tracking-[0.3em] pb-12">
-                    <div className="flex gap-10">
-                        <span className="flex items-center gap-2 underline underline-offset-4 cursor-pointer hover:text-[#714A38]">Count: {docs.length} assets</span>
-                        <span>Categorized: {docs.filter(d => d.tipo).length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        Sync Status: SOVEREIGN PROTOCOL ACTIVE
                     </div>
                 </div>
             </div>
 
-            {/* --- SIDE-PEEK CONTENT EDITOR (Hyper High Fidelity) --- */}
+            {/* --- SIDE-PEEK (Interactive Notion Editor) --- */}
             <AnimatePresence>
                 {selectedDoc && (
                     <div className="fixed inset-0 z-[500] flex justify-end">
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setSelectedDoc(null)}
                             className="absolute inset-0 bg-[#2C2C2A]/30 backdrop-blur-[2px]"
                         />
 
                         <motion.div
-                            initial={{ x: "100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 28, stiffness: 220, mass: 0.8 }}
+                            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                            transition={{ type: "spring", damping: 28, stiffness: 220 }}
                             className="relative w-full max-w-2xl bg-white h-screen border-l-[1.5px] border-[#2C2C2A] shadow-[-30px_0_60px_rgba(44,44,42,0.15)] flex flex-col"
                         >
-                            {/* Editor Header Navigation */}
-                            <div className="px-6 py-3 border-b-[1.5px] border-[#2C2C2A]/10 flex items-center justify-between bg-white sticky top-0 z-10">
-                                <div className="flex items-center gap-2">
+                            {/* Header Toolbar */}
+                            <div className="px-6 py-4 border-b-[1.5px] border-[#2C2C2A]/10 flex items-center justify-between bg-white sticky top-0 z-10">
+                                <div className="flex items-center gap-4">
                                     <button onClick={() => setSelectedDoc(null)} className="p-2 hover:bg-[#F1F1EF] rounded-[4px] transition-colors">
                                         <ChevronRight size={22} className="scale-x-[-1]" />
                                     </button>
-                                    <div className="flex items-center gap-2 px-3 py-1 hover:bg-[#F1F1EF] cursor-pointer rounded-[4px] group transition-colors">
-                                        <Maximize2 size={16} className="opacity-20 group-hover:opacity-100" />
-                                        <span className="text-[11px] font-black uppercase tracking-widest opacity-30">Full Page</span>
-                                    </div>
+                                    <button className="flex items-center gap-2 px-3 py-1 text-[11px] font-black uppercase opacity-20 hover:opacity-100 transition-opacity">
+                                        <Maximize2 size={16} /> full page
+                                    </button>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                     <button
-                                        onClick={handleSaveDescription}
-                                        disabled={isSavingDesc}
-                                        className="flex items-center gap-2 px-5 py-2 bg-[#714A38] text-white text-[11px] font-black uppercase tracking-[0.1em] border-[1.5px] border-[#2C2C2A] shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all disabled:opacity-50"
+                                        onClick={handleUpdateDoc}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-6 py-2 bg-[#714A38] text-white text-[11px] font-black uppercase tracking-widest border-[1.5px] border-[#2C2C2A] shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all disabled:opacity-50"
                                     >
-                                        {isSavingDesc ? <Loader2 size={14} className="animate-spin" /> : <Check size={16} />}
-                                        Actualizar Propiedades
+                                        {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={16} />}
+                                        ACTUALIZAR PROPIEDADES
                                     </button>
-                                    <button className="p-2 hover:bg-[#F1F1EF] rounded-[4px] transition-colors text-[#2C2C2A]/30">
+                                    <button className="p-2 hover:bg-[#F1F1EF] rounded-[4px] transition-colors text-[#2C2C2A]/20">
                                         <MoreHorizontal size={22} />
                                     </button>
                                 </div>
                             </div>
 
                             {/* Editor Body */}
-                            <div className="flex-1 overflow-y-auto px-12 py-14 scroll-smooth">
+                            <div className="flex-1 overflow-y-auto px-16 py-14 scroll-smooth">
+                                {/* Title Area */}
                                 <div className="mb-14">
-                                    {/* Page Title & Icon */}
-                                    <div className="flex items-start gap-5 mb-8">
-                                        <div className="p-5 bg-[#FAFAF8] rounded-[5px] border-[2px] border-[#2C2C2A] text-[#714A38] shadow-[4px_4px_0px_0px_rgba(44,44,42,0.05)]">
+                                    <div className="flex items-start gap-6 mb-8">
+                                        <div className="p-5 bg-white rounded-[5px] border-[2px] border-[#2C2C2A] text-[#714A38] shadow-[4px_4px_0px_0px_rgba(44,44,42,0.05)]">
                                             {getFileIcon(selectedDoc.formato)}
                                         </div>
-                                        <h2 className="text-4xl font-black text-[#2C2C2A] leading-tight focus:outline-none focus:ring-2 focus:ring-[#714A38]/10 p-1 rounded transition-all" contentEditable suppressContentEditableWarning>
-                                            {selectedDoc.nombre_archivo}
-                                        </h2>
+                                        <div className="flex-1">
+                                            <input
+                                                type="text"
+                                                value={editValues.nombre_archivo}
+                                                onChange={(e) => setEditValues({ ...editValues, nombre_archivo: e.target.value })}
+                                                className="w-full text-4xl font-black text-[#2C2C2A] leading-tight focus:outline-none bg-transparent border-none p-0"
+                                                placeholder="Sin título"
+                                            />
+                                            <div className="flex items-center gap-2 mt-2 opacity-30 text-[10px] font-bold uppercase tracking-widest">
+                                                ID: {selectedDoc.id.slice(0, 8)}...
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Properties Stack (THE HEART OF NOTION) */}
-                                    <div className="space-y-[1px] border-t border-b border-[#2C2C2A]/10 py-6 mb-12">
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group/p">
-                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-2.5 uppercase tracking-tighter">
-                                                <Tag size={13} /> Categoría
+                                    {/* Properties Interface (Interactive Inputs) */}
+                                    <div className="space-y-[1px] border-t border-b border-[#2C2C2A]/10 py-8 mb-12">
+                                        {/* Property: Category */}
+                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
+                                                <Tag size={14} /> CATEGORÍA
                                             </div>
-                                            <div className={cn(
-                                                "inline-flex w-fit px-2 py-0.5 rounded-[3px] text-[12px] font-black uppercase border border-transparent hover:border-[#2C2C2A]/20 cursor-pointer",
-                                                TIPOS.find(t => t.id === selectedDoc.tipo)?.color
-                                            )}>
-                                                {selectedDoc.tipo}
-                                            </div>
+                                            <select
+                                                value={editValues.tipo}
+                                                onChange={(e) => setEditValues({ ...editValues, tipo: e.target.value as any })}
+                                                className="bg-transparent border-none text-[13px] font-black uppercase text-[#714A38] outline-none cursor-pointer hover:bg-white rounded px-2"
+                                            >
+                                                {TIPOS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                                            </select>
                                         </div>
 
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group/p">
-                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-2.5 uppercase tracking-tighter">
-                                                <Layers size={13} /> Estado
+                                        {/* Property: Status */}
+                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
+                                                <Layers size={14} /> ESTADO
                                             </div>
-                                            <div className="flex items-center gap-2 px-2 py-1 rounded-[3px] bg-green-50 text-green-700 text-[11px] font-black uppercase border border-green-100 cursor-pointer">
-                                                <CheckCircle2 size={12} /> Finalizado
-                                            </div>
+                                            <select
+                                                value={editValues.estado}
+                                                onChange={(e) => setEditValues({ ...editValues, estado: e.target.value as any })}
+                                                className="bg-transparent border-none text-[13px] font-black uppercase text-green-700 outline-none cursor-pointer hover:bg-white rounded px-2"
+                                            >
+                                                {ESTADOS.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
+                                            </select>
                                         </div>
 
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group/p">
-                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-2.5 uppercase tracking-tighter">
-                                                <User size={13} /> Dueño
+                                        {/* Property: User (Relation) */}
+                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
+                                                <User size={14} /> DUEÑO
                                             </div>
-                                            <div className="flex items-center gap-2 hover:bg-white px-2 py-1 rounded-[3px] transition-colors cursor-pointer border border-transparent hover:border-[#2C2C2A]/10">
+                                            <div className="flex items-center gap-2 px-2 py-1 bg-white border border-[#2C2C2A]/10 rounded shadow-sm cursor-pointer hover:border-[#714A38]/30 transition-all">
                                                 <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[10px] font-black border border-[#2C2C2A]">R</div>
                                                 <span className="text-[13px] font-bold">Rafael Ibarra (Admin)</span>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group/p">
-                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-2.5 uppercase tracking-tighter">
-                                                <Clock size={13} /> Fichado en
+                                        {/* Property: Date (Read Only in this view) */}
+                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 opacity-60">
+                                            <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter">
+                                                <Clock size={14} /> FICHADO EN
                                             </div>
-                                            <div className="text-[12px] font-bold opacity-60 px-2 underline decoration-dotted decoration-[#2C2C2A]/20">
+                                            <div className="text-[12px] font-bold px-2">
                                                 {new Date(selectedDoc.fecha_subida).toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Large Dynamic Action */}
+                                    {/* Action Button */}
                                     <button
                                         onClick={() => descargarDocumento(selectedDoc.url_storage)}
-                                        className="w-full py-5 bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A] text-[15px] font-black uppercase tracking-[0.2em] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:bg-[#714A38] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-4 group"
+                                        className="w-full py-5 bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A] text-[15px] font-black uppercase tracking-[0.2em] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:bg-[#2C2C2A] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-4 group"
                                     >
-                                        <Download size={22} className="group-hover:animate-bounce" /> Descargar Asset Soberano
+                                        <Download size={22} className="group-hover:animate-bounce" /> DESCARGAR ASSET SOBERANO
                                     </button>
                                 </div>
 
-                                {/* Detailed Content Editor */}
+                                {/* Content Area */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 text-[11px] font-black uppercase text-[#2C2C2A]/40 tracking-[0.3em] pl-1">
-                                        <AlignLeft size={16} /> Asset Content Property
+                                        <AlignLeft size={16} /> ASSET CONTENT PROPERTY
                                     </div>
-                                    <div className="relative">
-                                        <textarea
-                                            value={editingDesc}
-                                            onChange={(e) => setEditingDesc(e.target.value)}
-                                            placeholder="Write detailed notes or comments for this database record..."
-                                            className="w-full min-h-[350px] bg-transparent border-none outline-none text-[20px] leading-relaxed text-[#2C2C2A] placeholder:text-[#2C2C2A]/10 resize-none font-medium px-1"
-                                        />
-                                        <div className="absolute bottom-2 right-2 flex items-center gap-2 opacity-20 pointer-events-none">
-                                            <span className="text-[10px] font-bold uppercase">Auto-saving active</span>
-                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                                        </div>
-                                    </div>
+                                    <textarea
+                                        value={editValues.descripcion}
+                                        onChange={(e) => setEditValues({ ...editValues, descripcion: e.target.value })}
+                                        placeholder="Escribe notas detalladas o comentarios sobre este registro..."
+                                        className="w-full min-h-[400px] bg-transparent border-none outline-none text-[20px] leading-relaxed text-[#2C2C2A] placeholder:text-[#2C2C2A]/10 resize-none font-medium px-1"
+                                    />
                                 </div>
                             </div>
                         </motion.div>
@@ -633,16 +631,14 @@ export default function DocumentsPage() {
                 )}
             </AnimatePresence>
 
-            {/* --- IMPORT MODAL (Notion Inspired) --- */}
+            {/* --- UPLOAD MODAL --- */}
             <AnimatePresence>
                 {isUploadOpen && (
                     <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUploadOpen(false)} className="absolute inset-0 bg-[#2C2C2A]/85 backdrop-blur-md" />
                         <motion.div
-                            initial={{ translateY: 40, opacity: 0, scale: 0.95 }}
-                            animate={{ translateY: 0, opacity: 1, scale: 1 }}
-                            exit={{ translateY: 40, opacity: 0, scale: 0.95 }}
-                            className="relative w-full max-w-2xl bg-white border-[2px] border-[#2C2C2A] shadow-[30px_30px_0px_0px_rgba(44,44,42,0.1)] rounded-[4px] overflow-hidden"
+                            initial={{ translateY: 40, opacity: 0 }} animate={{ translateY: 0, opacity: 1 }} exit={{ translateY: 40, opacity: 0 }}
+                            className="relative w-full max-w-2xl bg-white border-[2px] border-[#2C2C2A] shadow-[25px_25px_0px_0px_rgba(44,44,42,0.15)] rounded-[4px] overflow-hidden"
                         >
                             <form onSubmit={async (e) => {
                                 e.preventDefault();
@@ -669,51 +665,49 @@ export default function DocumentsPage() {
                                 <div className="p-6 border-b-[2px] border-[#2C2C2A]/10 flex items-center justify-between bg-[#FAFAF8]">
                                     <div className="flex items-center gap-3">
                                         <Upload size={20} className="text-[#714A38]" />
-                                        <h3 className="text-[13px] font-black uppercase tracking-widest text-[#2C2C2A]">Ingresar Nuevo Activo</h3>
+                                        <h3 className="text-[13px] font-black uppercase tracking-widest text-[#2C2C2A]">INGRESAR NUEVO ACTIVO</h3>
                                     </div>
-                                    <button type="button" onClick={() => setIsUploadOpen(false)} className="p-1 hover:bg-[#2C2C2A]/5 rounded-sm transition-colors text-[#2C2C2A]/30">
+                                    <button type="button" onClick={() => setIsUploadOpen(false)} className="p-1 hover:bg-[#2C2C2A]/5 text-[#2C2C2A]/30">
                                         <X size={26} />
                                     </button>
                                 </div>
 
-                                <div className="p-12 space-y-12">
-                                    {/* Custom Dropzone */}
+                                <div className="p-10 space-y-10">
                                     <div
                                         onClick={() => uploadInputRef.current?.click()}
                                         className="border-[2px] border-dashed border-[#2C2C2A]/20 p-16 text-center cursor-pointer hover:border-[#714A38] hover:bg-[#714A38]/5 group transition-all rounded-[4px] bg-[#FAFAF8]/50"
                                     >
                                         <input type="file" ref={uploadInputRef} className="hidden" required />
-                                        <div className="w-20 h-20 bg-white border-[2px] border-[#2C2C2A]/5 rounded-[6px] flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-sm group-hover:border-[#714A38]/20">
-                                            <Upload className="text-[#714A38]/30 group-hover:text-[#714A38]" size={36} />
-                                        </div>
-                                        <p className="text-[16px] font-black text-[#2C2C2A] tracking-tight">Drop your electronic audit asset here</p>
-                                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-30 mt-3 italic">Max file size: 10MB (Audit Protocol v2.5)</p>
+                                        <Upload className="text-[#714A38]/30 group-hover:text-[#714A38] mx-auto mb-4" size={36} />
+                                        <p className="text-[16px] font-black text-[#2C2C2A]">Arrastra o selecciona el archivo</p>
+                                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-30 mt-2 italic">PDF, XLSX, DOCX (Max 10MB)</p>
                                     </div>
 
-                                    <div className="space-y-8">
-                                        <div className="grid grid-cols-[140px_1fr] gap-10 items-center">
-                                            <label className="text-[12px] font-black uppercase text-[#2C2C2A]/30 flex items-center gap-3">
-                                                <Tag size={16} /> Propiedad TIPO
-                                            </label>
-                                            <select name="tipo" className="w-full bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-4 text-[13px] font-black uppercase tracking-widest outline-none focus:border-[#714A38] rounded-[3px] appearance-none cursor-pointer">
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black uppercase text-[#2C2C2A]/40">Categoría</label>
+                                            <select name="tipo" className="w-full bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-3 text-[13px] font-black uppercase outline-none focus:border-[#714A38] rounded-[3px]">
                                                 {TIPOS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                                             </select>
                                         </div>
-                                        <div className="grid grid-cols-[140px_1fr] gap-10 items-start">
-                                            <label className="text-[12px] font-black uppercase text-[#2C2C2A]/30 flex items-center gap-3 mt-3">
-                                                <AlignLeft size={16} /> COMENTARIO
-                                            </label>
-                                            <textarea name="descripcion" className="w-full min-h-[140px] bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-5 text-[14px] font-medium outline-none focus:border-[#714A38] rounded-[3px] resize-none placeholder:italic placeholder:opacity-20" placeholder="Añade contexto técnico sobre este archivo..." />
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black uppercase text-[#2C2C2A]/40">Propiedad Extra</label>
+                                            <div className="p-3 bg-white border-[1.5px] border-[#2C2C2A]/5 text-[12px] opacity-30 italic rounded-[3px]">Asignado automáticamente...</div>
                                         </div>
                                     </div>
 
-                                    <div className="pt-10 flex justify-end items-center gap-12 border-t-[1.5px] border-[#2C2C2A]/5">
-                                        <button type="button" onClick={() => setIsUploadOpen(false)} className="text-[12px] font-black uppercase tracking-widest text-[#2C2C2A]/30 hover:text-red-500 transition-colors">Aborta Operación</button>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black uppercase text-[#2C2C2A]/40">Descripción Inicial</label>
+                                        <textarea name="descripcion" className="w-full min-h-[100px] bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-4 text-[14px] font-medium outline-none focus:border-[#714A38] rounded-[3px] resize-none" placeholder="..." />
+                                    </div>
+
+                                    <div className="pt-6 flex justify-end items-center gap-12 border-t-[1.5px] border-[#2C2C2A]/5">
+                                        <button type="button" onClick={() => setIsUploadOpen(false)} className="text-[12px] font-black uppercase tracking-widest text-[#2C2C2A]/30 hover:text-red-500">ABORTAR</button>
                                         <button
                                             disabled={loading}
-                                            className="px-16 py-4 bg-[#714A38] text-white text-[13px] font-black uppercase tracking-widest border-[1.5px] border-[#2C2C2A] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-30 flex items-center gap-4"
+                                            className="px-16 py-4 bg-[#714A38] text-white text-[13px] font-black uppercase tracking-widest border-[1.5px] border-[#2C2C2A] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-30"
                                         >
-                                            {loading ? <Loader2 className="animate-spin" size={18} /> : <>Sellar e Importar <Check size={20} /></>}
+                                            {loading ? <Loader2 className="animate-spin" size={18} /> : "FINALIZAR E IMPORTAR"}
                                         </button>
                                     </div>
                                 </div>
