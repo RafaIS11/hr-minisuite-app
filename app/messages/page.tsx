@@ -56,27 +56,40 @@ export default function MessagesPage() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+    const fetchEmployeesRecords = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data: emps } = await supabase.from("empleados").select("id, nombre, puesto, email");
+
+        if (emps) {
+            setEmployees(emps);
+            const current = emps.find(e => e.email === user?.email);
+            if (current) {
+                setCurrentUser(current);
+            }
+        }
+    };
+
     useEffect(() => {
         async function init() {
             setLoading(true);
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data: emps } = await supabase.from("empleados").select("id, nombre, puesto, email");
-
-            if (emps) {
-                setEmployees(emps);
-                const current = emps.find(e => e.email === user?.email);
-                if (current) {
-                    setCurrentUser(current);
-                }
-            }
-
-            // Filtrar tareas solo para el usuario actual si existe
-            let taskQuery = supabase.from("tareas").select("*").eq("status", "pendiente");
-            const { data: t } = await taskQuery;
+            await fetchEmployeesRecords();
+            const { data: t } = await supabase.from("tareas").select("*").eq("status", "pendiente");
             if (t) setTasks(t);
             setLoading(false);
         }
         init();
+
+        // Suscripción en tiempo real al directorio de empleados
+        const employeesChannel = supabase
+            .channel('directory_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'empleados' }, () => {
+                fetchEmployeesRecords();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(employeesChannel);
+        };
     }, []);
 
     const fetchMessages = async (receiverId: string) => {

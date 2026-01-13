@@ -61,6 +61,17 @@ export default function PeoplePage() {
 
     useEffect(() => {
         fetchEmployees();
+
+        const peopleChannel = supabase
+            .channel('people_directory_updates')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'empleados' }, () => {
+                fetchEmployees();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(peopleChannel);
+        };
     }, []);
 
     const columns = [
