@@ -1,0 +1,110 @@
+/* Custom FullCalendar Swiss Design Theme */
+
+.fc {
+    --fc-border-color: #E2E2E0;
+    --fc-button-bg-color: #FFFFFF;
+    --fc-button-border-color: #1A1A1A;
+    --fc-button-text-color: #1A1A1A;
+    --fc-button-hover-bg-color: #F1F1EF;
+    --fc-button-hover-border-color: #1A1A1A;
+    --fc-button-active-bg-color: #1A1A1A;
+    --fc-button-active-border-color: #1A1A1A;
+    --fc-event-bg-color: #1A1A1A;
+    --fc-event-border-color: #1A1A1A;
+    --fc-today-bg-color: #F1F1EF;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.fc .fc-toolbar-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+}
+
+.fc .fc-button {
+    border-radius: 0px !important;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.8rem 1.2rem;
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.fc .fc-button:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.15);
+}
+
+.fc .fc-button:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+}
+
+.fc .fc-col-header-cell {
+    background: #F1F1EF;
+    padding: 12px 0;
+}
+
+.fc .fc-col-header-cell-cushion {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(26, 26, 26, 0.4);
+}
+
+.fc .fc-daygrid-day-number {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px;
+}
+
+.fc-v-event {
+    border-radius: 2px !important;
+    border: none !important;
+    padding: 2px 4px !important;
+}
+
+.fc-h-event {
+    border-radius: 2px !important;
+    border: none !important;
+}
+
+.fc-event-title {
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    text-transform: uppercase;
+}
+
+/* Event Types Colors */
+.event-turno {
+    background-color: #704A38 !important;
+}
+
+.event-festivo {
+    background-color: #A13D3D !important;
+}
+
+.event-cumpleanos {
+    background-color: #EAB308 !important;
+}
+
+.event-tarea {
+    border-left: 4px solid #1A1A1A !important;
+    background-color: white !important;
+    color: #1A1A1A !important;
+    border: 1px solid #E2E2E0 !important;
+}
+
+.event-reunion {
+    background-color: #1A1A1A !important;
+}
+
+.event-recordatorio {
+    background-color: #704A38 !important;
+    opacity: 0.7;
+}

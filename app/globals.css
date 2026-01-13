@@ -1,26 +1,65 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-inter: var(--font-inter);
+  --font-space-grotesk: var(--font-space-grotesk);
+
+  --color-background: #FAFAF8;
+  --color-primary: #714A38;
+  --color-charcoal: #2C2C2A;
+  --color-surface: #FFFFFF;
+
+  --color-success: #4A7C59;
+  --color-error: #A13D3D;
+  --color-warning: #B8844D;
+
+  --shadow-swiss: 4px 4px 0px 0px rgba(44, 44, 42, 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    --background: 60 40% 98%;
+    /* Corresponding to #FAFAF8 approx */
+    --foreground: 60 2% 17%;
+    /* Corresponding to #2C2C2A approx */
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    --primary: 19 33% 33%;
+    /* Corresponding to #714A38 */
+    --primary-foreground: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 60 2% 17%;
+
+    --border: 60 2% 17%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-charcoal);
+    font-family: var(--font-inter), sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-display {
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-weight: 600;
+  }
+
+  /* Standardized Border for the SaaS */
+  .border-premium {
+    border-width: 1.5px;
+    border-color: var(--color-charcoal);
+  }
+
+  /* Swiss Shadow Utility */
+  .swiss-shadow {
+    box-shadow: var(--shadow-swiss);
+    border: 1.5px solid var(--color-charcoal);
+  }
 }
