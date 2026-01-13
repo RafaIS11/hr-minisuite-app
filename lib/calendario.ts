@@ -8,33 +8,59 @@ export interface Evento {
     fecha_inicio: string;
     fecha_fin: string;
     todo_el_dia: boolean;
-    tipo_evento: 'evento' | 'tarea' | 'recordatorio' | 'turno' | 'festivo';
+    tipo_evento: 'evento' | 'tarea' | 'recordatorio' | 'jornada' | 'cumpleaños' | 'festivo' | 'descanso';
+    categoria: 'EVENTO' | 'HORARIOS' | 'PERSONAL';
     empleado_id?: string;
     prioridad: 'baja' | 'normal' | 'alta' | 'urgente';
     estado: 'pendiente' | 'completado' | 'cancelado';
     color_hex: string;
+    videoconferencia?: string;
+    recordatorio_minutos?: number;
     creado_por?: string;
     fecha_creacion: string;
 }
 
 export const getColorPorTipo = (tipo: string): string => {
     switch (tipo) {
-        case 'evento': return '#704A38';
-        case 'tarea': return '#2C2C2A';
-        case 'recordatorio': return '#B8844D';
-        case 'festivo': return '#A13D3D';
-        case 'turno': return '#704A38';
+        case 'evento': return '#704A38';      // Brown (EVENTO)
+        case 'jornada': return '#B8844D';     // Mustard (HORARIOS)
+        case 'festivo': return '#A13D3D';     // Red
+        case 'cumpleaños': return '#4A705B';  // Green (PERSONAL)
+        case 'tarea': return '#2C2C2A';       // Dark
+        case 'recordatorio': return '#E67E22';// Orange
+        case 'descanso': return '#95A5A6';    // Gray
         default: return '#704A38';
     }
 };
 
+export const getCategoriaPorTipo = (tipo: string): 'EVENTO' | 'HORARIOS' | 'PERSONAL' => {
+    switch (tipo) {
+        case 'jornada':
+        case 'descanso':
+            return 'HORARIOS';
+        case 'cumpleaños':
+            return 'PERSONAL';
+        default:
+            return 'EVENTO';
+    }
+};
+
 export async function crearEvento(data: Partial<Evento>): Promise<Evento | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
+
+    const payload = {
+        ...data,
+        empleado_id: data.empleado_id || emp?.id,
+        color_hex: data.color_hex || getColorPorTipo(data.tipo_evento || 'evento'),
+        categoria: data.categoria || getCategoriaPorTipo(data.tipo_evento || 'evento')
+    };
+
     const { data: evento, error } = await supabase
         .from('calendario_eventos')
-        .insert([{
-            ...data,
-            color_hex: data.color_hex || getColorPorTipo(data.tipo_evento || 'evento')
-        }])
+        .insert([payload])
         .select()
         .single();
 
@@ -46,15 +72,10 @@ export async function crearEvento(data: Partial<Evento>): Promise<Evento | null>
 }
 
 export async function obtenerEventos(mes: number, anio: number, empleado_id?: string): Promise<Evento[]> {
-    // Calcular inicio y fin de mes
-    const inicioMes = new Date(anio, mes - 1, 1).toISOString();
-    const finMes = new Date(anio, mes, 0, 23, 59, 59).toISOString();
-
+    // Note: This fetches everything for now, can be optimized
     let query = supabase
         .from('calendario_eventos')
-        .select('*')
-        .gte('fecha_inicio', inicioMes)
-        .lte('fecha_inicio', finMes);
+        .select('*');
 
     if (empleado_id) {
         query = query.eq('empleado_id', empleado_id);
@@ -93,23 +114,4 @@ export async function eliminarEvento(id: string): Promise<void> {
     if (error) {
         console.error('Error al eliminar evento:', error);
     }
-}
-
-export async function obtenerEventosPorTipo(tipo: string, empleado_id?: string): Promise<Evento[]> {
-    let query = supabase
-        .from('calendario_eventos')
-        .select('*')
-        .eq('tipo_evento', tipo);
-
-    if (empleado_id) {
-        query = query.eq('empleado_id', empleado_id);
-    }
-
-    const { data: eventos, error } = await query;
-
-    if (error) {
-        console.error('Error al obtener eventos por tipo:', error);
-        return [];
-    }
-    return eventos || [];
 }
