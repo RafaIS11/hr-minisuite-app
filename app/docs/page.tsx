@@ -642,18 +642,25 @@ export default function DocumentsPage() {
                         >
                             <form onSubmit={async (e) => {
                                 e.preventDefault();
+                                const form = e.currentTarget;
+                                const formData = new FormData(form);
                                 const fileInput = uploadInputRef.current;
+
                                 if (!fileInput?.files?.[0]) return;
+
+                                const tip = formData.get('tipo') as any;
+                                const desc = formData.get('descripcion') as string;
 
                                 setLoading(true);
                                 try {
                                     const { data: { user } } = await supabase.auth.getUser();
                                     const { data: emp } = await supabase.from("empleados").select("id").eq("email", user?.email).maybeSingle();
 
-                                    const tip = (e.currentTarget.tipo as HTMLSelectElement).value as any;
-                                    const desc = (e.currentTarget.descripcion as HTMLTextAreaElement).value;
-
-                                    await subirDocumento(fileInput.files[0], { tipo: tip, descripcion: desc, persona_id: emp?.id });
+                                    await subirDocumento(fileInput.files[0], {
+                                        tipo: tip,
+                                        descripcion: desc,
+                                        persona_id: emp?.id
+                                    });
                                     setIsUploadOpen(false);
                                     await loadData();
                                 } catch (err: any) {
