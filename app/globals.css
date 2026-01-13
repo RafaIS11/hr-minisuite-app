@@ -13,29 +13,23 @@
   --color-error: #A13D3D;
   --color-warning: #B8844D;
 
-  --shadow-swiss: 4px 4px 0px 0px rgba(44, 44, 42, 0.1);
+  --shadow-swiss: 8px 8px 0px 0px rgba(44, 44, 42, 0.05);
 }
 
 @layer base {
   :root {
     --background: 60 40% 98%;
-    /* Corresponding to #FAFAF8 approx */
     --foreground: 60 2% 17%;
-    /* Corresponding to #2C2C2A approx */
-
     --primary: 19 33% 33%;
-    /* Corresponding to #714A38 */
     --primary-foreground: 0 0% 100%;
-
     --card: 0 0% 100%;
     --card-foreground: 60 2% 17%;
-
     --border: 60 2% 17%;
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-charcoal);
+    background-color: #FAFAF8 !important;
+    color: #2C2C2A;
     font-family: var(--font-inter), sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -51,15 +45,17 @@
     font-weight: 600;
   }
 
-  /* Standardized Border for the SaaS */
   .border-premium {
-    border-width: 1.5px;
-    border-color: var(--color-charcoal);
+    border: 1.5px solid #2C2C2A !important;
   }
 
-  /* Swiss Shadow Utility */
   .swiss-shadow {
     box-shadow: var(--shadow-swiss);
-    border: 1.5px solid var(--color-charcoal);
+    border: 1.5px solid #2C2C2A;
+  }
+
+  /* Global border color enforcement */
+  * {
+    border-color: #2C2C2A;
   }
 }

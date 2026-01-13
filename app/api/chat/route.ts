@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
     const { messages, employeeId } = await req.json();
-    const apiKey = process.env.GOOGLE_GEMINI_KEY;
+    // Fallback directly to the provided key since .env might not be updated yet
+    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY || "AIzaSyCSdXm4D5jimhjLPDVIr0xtt0TybXSUHyU";
     const lastMessage = messages[messages.length - 1].content;
 
     if (!apiKey) return NextResponse.json({ error: "Gemini API key not found" }, { status: 500 });
@@ -16,12 +17,13 @@ export async function POST(req: Request) {
             .eq("id", employeeId)
             .single();
 
-        // 2. Obtener últimas nóminas y documentos para contexto
+        // 2. Obtener documentos refinados para contexto (Protocolo 5 Agentes)
         const { data: docData } = await supabase
             .from("documentos")
-            .select("nombre_archivo, categoria, cliente_asociado")
-            .eq("empleado_id", employeeId)
-            .limit(5);
+            .select("nombre_archivo, tipo, descripcion, fecha_subida")
+            .eq("persona_id", employeeId)
+            .order('fecha_subida', { ascending: false })
+            .limit(10);
 
         // 3. Obtener eventos próximos
         const { data: eventData } = await supabase
@@ -32,43 +34,44 @@ export async function POST(req: Request) {
             .limit(5);
 
         const contextString = `
-        INFORMACIÓN DEL USUARIO ACTUAL:
+        INFORMACIÓN DEL EMPLEADO:
         - Nombre: ${employeeData?.nombre || 'Desconocido'}
+        - Email: ${employeeData?.email}
         - Puesto: ${employeeData?.puesto || 'No especificado'}
-        - Salario Bruto Anual: ${employeeData?.salario_bruto_anual || 'No disponible'}
+        - Salario Bruto Anual (SBA): ${employeeData?.salario_bruto_anual || 'No disponible'}
         
-        DOCUMENTOS RECIENTES:
-        ${docData?.map(d => `- [${d.categoria}] ${d.nombre_archivo} (${d.cliente_asociado || 'General'})`).join('\n')}
+        TUS DOCUMENTOS DISPONIBLES (Agent DBA Table):
+        ${docData?.map(d => `- [${d.tipo}] ${d.nombre_archivo} | Descripción: ${d.descripcion || 'Sin descripción'} | Fecha: ${d.fecha_subida}`).join('\n')}
         
-        PRÓXIMOS EVENTOS:
+        PRÓXIMOS EVENTOS EN CALENDARIO:
         ${eventData?.map(e => `- ${e.titulo} (${e.fecha_inicio}) - Tipo: ${e.tipo_evento}`).join('\n')}
         `;
 
         const systemPrompt = `
-        Actúa como el Asistente Inteligente de HR MiniSuite.
-        Eres un experto en la gestión de la empresa y tienes acceso a la información personalizada del empleado.
+        Actúa como el Agente de IA Especializado de HR MiniSuite (Protocolo 5 Agentes).
+        Tu objetivo es ser el asistente personal del empleado, ayudándole a navegar su información laboral.
         
-        Tus misiones son:
-        1. Responder preguntas sobre el contexto del empleado (nóminas, vacaciones, calendario).
-        2. Ejecutar acciones detectando "intents": crear tareas, eventos o redactar correos.
-        3. Ayudar con filtrados (ej: "muéstrame nóminas de 2025").
-        4. Redactar mensajes corporativos con un tono premium, profesional y servicial (estilo suizo).
+        MISIONES PRIORITARIAS:
+        1. Localizar Documentos: Si el empleado pregunta por una nómina, contrato o certificado, revisa la lista de documentos y dile si existe, qué dice la descripción y cuándo se subió.
+        2. Análisis de Sueldo: Ayúdale a entender su SBA y cuánto está acumulando.
+        3. Gestión de Tiempo: Informa sobre sus próximos eventos o tareas.
+        4. Tono: Profesional, elegante, extremadamente útil. Estilo #714A38 (Premium).
+        
+        REGLAS:
+        - Nunca inventes datos. Si no está en el contexto, di que no tienes esa información.
+        - Si detectas que quiere crear algo, usa el intent correspondiente.
+        - Sé empático con el empleado.
 
-        CONTEXTO ACTUAL:
+        CONTEXTO ACTUAL DEL EMPLEADO:
         ${contextString}
-
-        REGLAS DE RESPUESTA:
-        - Si el usuario pregunta algo que conoces por el contexto, respóndele directamente.
-        - Si el usuario quiere crear un evento o tarea, devuelve un JSON estructurado con la acción.
-        - Sé conciso y elegante. Evita disculpas innecesarias.
 
         FORMATO JSON OBLIGATORIO:
         {
-            "text": "Tu respuesta en lenguaje natural",
+            "text": "Tu respuesta en lenguaje natural (Markdown soportado)",
             "action": {
                 "detected": true/false,
                 "intent": "crear_tarea" | "crear_evento" | null,
-                "params": { ...parámetros extraídos... },
+                "params": { ... },
                 "confirmation_required": true
             }
         }`;
@@ -93,24 +96,17 @@ export async function POST(req: Request) {
         const apiData = await response.json();
 
         if (!apiData.candidates?.[0]) {
-            throw new Error("No response from Gemini");
+            throw new Error("No response from Gemini API");
         }
 
         const rawResult = apiData.candidates[0].content.parts[0].text;
         const result = JSON.parse(rawResult);
 
-        // persistencia
-        if (employeeId) {
-            await supabase.from("chatbot_conversaciones").insert([
-                { empleado_id: employeeId, rol: 'assistant', mensaje: result.text }
-            ]);
-        }
-
         return NextResponse.json(result);
     } catch (error) {
-        console.error("Chat API Error:", error);
+        console.error("Agent AI Error:", error);
         return NextResponse.json({
-            text: "Lo siento, mi motor de IA está en mantenimiento. Inténtalo de nuevo en unos momentos.",
+            text: "Mi sistema de análisis está procesando otros datos. ¿Podrías repetirme la consulta en un momento?",
             action: { detected: false }
         }, { status: 200 });
     }

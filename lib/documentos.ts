@@ -2,24 +2,23 @@ import { supabase } from './supabase';
 
 export interface Documento {
     id: string;
-    empleado_id?: string;
+    persona_id?: string;
     nombre_archivo: string;
     url_storage: string;
     formato: 'pdf' | 'xlsx' | 'docx';
-    categoria: 'nomina' | 'contrato' | 'cliente' | 'proveedor' | 'certificado';
-    cliente_asociado?: string;
+    tipo: 'Nómina' | 'Contrato Laboral' | 'Modelo 145' | 'Certificado de Empresa' | 'Justificante Médico' | 'Gasto/Ticket';
+    descripcion?: string;
     fecha_subida: string;
 }
 
 export async function subirDocumento(
     file: File,
     metadata: {
-        categoria: 'nomina' | 'contrato' | 'cliente' | 'proveedor' | 'certificado';
-        empleado_id?: string;
-        cliente_asociado?: string;
+        tipo: 'Nómina' | 'Contrato Laboral' | 'Modelo 145' | 'Certificado de Empresa' | 'Justificante Médico' | 'Gasto/Ticket';
+        persona_id?: string;
+        descripcion?: string;
     }
 ): Promise<Documento | null> {
-    // 1. Validar: formato y tamaño
     const allowedExtensions = ['pdf', 'xlsx', 'docx'];
     const extension = file.name.split('.').pop()?.toLowerCase();
 
@@ -31,12 +30,10 @@ export async function subirDocumento(
         throw new Error('El archivo supera los 10MB.');
     }
 
-    // 2. Generar path
     const timestamp = Date.now();
-    const userId = metadata.empleado_id || 'anonymous';
-    const filePath = `${userId}/${metadata.categoria}/${timestamp}_${file.name}`;
+    const personaId = metadata.persona_id || 'anonymous';
+    const filePath = `${personaId}/${metadata.tipo}/${timestamp}_${file.name}`;
 
-    // 3. Subir a Storage
     const { data: storageData, error: storageError } = await supabase.storage
         .from('hr-documents')
         .upload(filePath, file);
@@ -46,21 +43,19 @@ export async function subirDocumento(
         throw storageError;
     }
 
-    // 4. Obtener URL
     const { data: { publicUrl } } = supabase.storage
         .from('hr-documents')
         .getPublicUrl(filePath);
 
-    // 5. Insertar metadata
     const { data: doc, error: dbError } = await supabase
         .from('documentos')
         .insert([{
-            empleado_id: metadata.empleado_id,
+            persona_id: metadata.persona_id,
             nombre_archivo: file.name,
             url_storage: publicUrl,
             formato: extension as any,
-            categoria: metadata.categoria,
-            cliente_asociado: metadata.cliente_asociado
+            tipo: metadata.tipo,
+            descripcion: metadata.descripcion
         }])
         .select()
         .single();
@@ -74,27 +69,32 @@ export async function subirDocumento(
 }
 
 export async function obtenerDocumentos(filtros?: {
-    categoria?: string;
-    cliente?: string;
+    tipo?: string;
     search?: string;
-    empleado_id?: string;
+    persona_id?: string;
+    fecha_desde?: string;
+    fecha_hasta?: string;
 }): Promise<Documento[]> {
     let query = supabase.from('documentos').select('*').order('fecha_subida', { ascending: false });
 
-    if (filtros?.empleado_id) {
-        query = query.eq('empleado_id', filtros.empleado_id);
+    if (filtros?.persona_id) {
+        query = query.eq('persona_id', filtros.persona_id);
     }
 
-    if (filtros?.categoria && filtros.categoria !== 'todos') {
-        query = query.eq('categoria', filtros.categoria);
-    }
-
-    if (filtros?.cliente) {
-        query = query.ilike('cliente_asociado', `%${filtros.cliente}%`);
+    if (filtros?.tipo && filtros.tipo !== 'todos') {
+        query = query.eq('tipo', filtros.tipo);
     }
 
     if (filtros?.search) {
         query = query.ilike('nombre_archivo', `%${filtros.search}%`);
+    }
+
+    if (filtros?.fecha_desde) {
+        query = query.gte('fecha_subida', filtros.fecha_desde);
+    }
+
+    if (filtros?.fecha_hasta) {
+        query = query.lte('fecha_subida', filtros.fecha_hasta);
     }
 
     const { data, error } = await query;
@@ -126,10 +126,10 @@ export function descargarDocumento(url: string) {
     window.open(url, '_blank');
 }
 
-export async function obtenerEstadisticas(empleado_id?: string) {
+export async function obtenerEstadisticas(persona_id?: string) {
     let query = supabase.from('documentos').select('formato');
-    if (empleado_id) {
-        query = query.eq('empleado_id', empleado_id);
+    if (persona_id) {
+        query = query.eq('persona_id', persona_id);
     }
 
     const { data } = await query;
@@ -140,4 +140,16 @@ export async function obtenerEstadisticas(empleado_id?: string) {
         words: data?.filter(d => d.formato === 'docx').length || 0
     };
     return stats;
+}
+
+export async function actualizarDescripcion(id: string, descripcion: string): Promise<void> {
+    const { error } = await supabase
+        .from('documentos')
+        .update({ descripcion })
+        .eq('id', id);
+
+    if (error) {
+        console.error('Error actualizando descripción:', error);
+        throw error;
+    }
 }
