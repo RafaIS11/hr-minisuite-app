@@ -320,15 +320,21 @@ export default function MessagesPage() {
                                     <div ref={messagesEndRef} />
                                 </div>
 
-                                <div className="p-6 bg-white border-t-premium pr-24 relative">
+                                <div className="p-6 bg-white border-t-premium pr-24 relative z-[50]">
                                     {!currentUser && (
-                                        <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+                                        <div className="absolute inset-0 z-[60] bg-white/80 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
                                             <p className="text-xs font-bold uppercase tracking-widest text-primary italic">
                                                 ⚠️ Debes configurar tu perfil en "Ajustes" para empezar a chatear.
                                             </p>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-4">
+                                    <form
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            handleSendMessage();
+                                        }}
+                                        className="flex items-center gap-4"
+                                    >
                                         <input
                                             type="file"
                                             ref={fileInputRef}
@@ -336,6 +342,7 @@ export default function MessagesPage() {
                                             className="hidden"
                                         />
                                         <button
+                                            type="button"
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={isUploading}
                                             className="p-3 border-premium text-charcoal/40 hover:text-charcoal transition-colors rounded-sm"
@@ -346,18 +353,17 @@ export default function MessagesPage() {
                                             type="text"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                             placeholder="Escribe un mensaje..."
                                             className="flex-1 bg-[#FAFAF8] border-premium rounded-sm px-6 py-3 text-sm font-medium focus:outline-none focus:border-charcoal transition-colors"
                                         />
                                         <button
-                                            onClick={() => handleSendMessage()}
+                                            type="submit"
                                             disabled={isSending || !newMessage.trim()}
-                                            className="bg-charcoal text-white p-3 rounded-sm hover:translate-y-[-2px] transition-transform shadow-sm disabled:opacity-20"
+                                            className="bg-charcoal text-white p-3 rounded-sm hover:translate-y-[-2px] transition-transform shadow-sm disabled:opacity-20 flex items-center justify-center min-w-[44px]"
                                         >
                                             {isSending ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <Send size={20} />}
                                         </button>
-                                    </div>
+                                    </form>
                                 </div>
                             </>
                         ) : (
