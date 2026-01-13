@@ -20,6 +20,31 @@ import {
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
+const DEPARTAMENTOS = [
+    "Dirección General",
+    "Recursos Humanos",
+    "Tecnología",
+    "Marketing",
+    "Ventas",
+    "Operaciones",
+    "Finanzas",
+    "Legal",
+    "Atención al Cliente"
+];
+
+const PUESTOS = [
+    "CEO / Fundador",
+    "Director de RRHH",
+    "HR Manager",
+    "CTO / Director Técnico",
+    "Software Engineer",
+    "Marketing Lead",
+    "Sales Manager",
+    "Administrativo",
+    "Contable",
+    "Product Manager"
+];
+
 export default function SettingsPage() {
     const [profile, setProfile] = useState<any>(null);
     const [formData, setFormData] = useState({
@@ -261,26 +286,32 @@ export default function SettingsPage() {
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/30">Puesto de trabajo</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal focus-within:ring-1 focus-within:ring-primary/20 border-premium bg-[#f8f8f7] p-4 rounded-sm">
                                     <Landmark size={16} className="text-primary" />
-                                    <input
-                                        type="text"
+                                    <select
                                         value={formData.puesto}
                                         onChange={(e) => setFormData({ ...formData, puesto: e.target.value })}
-                                        placeholder="Ej. Desarrollador Web"
-                                        className="bg-transparent border-none p-0 focus:outline-none w-full"
-                                    />
+                                        className="bg-transparent border-none p-0 focus:outline-none w-full appearance-none cursor-pointer"
+                                    >
+                                        <option value="" disabled>Selecciona un puesto...</option>
+                                        {PUESTOS.map(p => (
+                                            <option key={p} value={p}>{p}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/30">Departamento</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal focus-within:ring-1 focus-within:ring-primary/20 border-premium bg-[#f8f8f7] p-4 rounded-sm">
                                     <Building size={16} className="text-primary" />
-                                    <input
-                                        type="text"
+                                    <select
                                         value={formData.departamento}
                                         onChange={(e) => setFormData({ ...formData, departamento: e.target.value })}
-                                        placeholder="Ej. Operaciones"
-                                        className="bg-transparent border-none p-0 focus:outline-none w-full"
-                                    />
+                                        className="bg-transparent border-none p-0 focus:outline-none w-full appearance-none cursor-pointer"
+                                    >
+                                        <option value="" disabled>Selecciona un departamento...</option>
+                                        {DEPARTAMENTOS.map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>
