@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -44,11 +44,11 @@ export async function proxy(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/auth/callback');
 
     if (!session && !isAuthPage) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/login', request.nextUrl.origin));
     }
 
     if (session && isAuthPage) {
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL('/', request.nextUrl.origin));
     }
 
     return response;
