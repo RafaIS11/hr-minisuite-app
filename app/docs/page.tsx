@@ -48,7 +48,6 @@ export default function DocumentsPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("todos");
-    const [selectedEntity, setSelectedEntity] = useState("");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
@@ -60,7 +59,7 @@ export default function DocumentsPage() {
 
     useEffect(() => {
         loadData();
-    }, [search, selectedCategory, selectedEntity]);
+    }, [search, selectedCategory]);
 
     const loadData = async () => {
         setLoading(true);
