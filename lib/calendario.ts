@@ -45,17 +45,22 @@ export async function crearEvento(data: Partial<Evento>): Promise<Evento | null>
     return evento;
 }
 
-export async function obtenerEventos(mes: number, anio: number): Promise<Evento[]> {
+export async function obtenerEventos(mes: number, anio: number, empleado_id?: string): Promise<Evento[]> {
     // Calcular inicio y fin de mes
     const inicioMes = new Date(anio, mes - 1, 1).toISOString();
     const finMes = new Date(anio, mes, 0, 23, 59, 59).toISOString();
 
-    const { data: eventos, error } = await supabase
+    let query = supabase
         .from('calendario_eventos')
         .select('*')
         .gte('fecha_inicio', inicioMes)
-        .lte('fecha_inicio', finMes)
-        .order('fecha_inicio', { ascending: true });
+        .lte('fecha_inicio', finMes);
+
+    if (empleado_id) {
+        query = query.eq('empleado_id', empleado_id);
+    }
+
+    const { data: eventos, error } = await query.order('fecha_inicio', { ascending: true });
 
     if (error) {
         console.error('Error al obtener eventos:', error);
@@ -90,11 +95,17 @@ export async function eliminarEvento(id: string): Promise<void> {
     }
 }
 
-export async function obtenerEventosPorTipo(tipo: string): Promise<Evento[]> {
-    const { data: eventos, error } = await supabase
+export async function obtenerEventosPorTipo(tipo: string, empleado_id?: string): Promise<Evento[]> {
+    let query = supabase
         .from('calendario_eventos')
         .select('*')
         .eq('tipo_evento', tipo);
+
+    if (empleado_id) {
+        query = query.eq('empleado_id', empleado_id);
+    }
+
+    const { data: eventos, error } = await query;
 
     if (error) {
         console.error('Error al obtener eventos por tipo:', error);

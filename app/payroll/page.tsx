@@ -44,7 +44,19 @@ export default function AdvancedPayrollPage() {
     useEffect(() => {
         async function init() {
             setLoading(true);
-            const { data: emp } = await supabase.from("empleados").select("*").eq('email', 'rafa@hr-minisuite.com').single();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
+            const { data: emp } = await supabase
+                .from("empleados")
+                .select("*")
+                .eq('email', user.email)
+                .maybeSingle();
+
             if (emp) {
                 setEmployee(emp);
                 setPersonalData({
@@ -55,7 +67,7 @@ export default function AdvancedPayrollPage() {
                     discapacidad: emp.discapacidad || 'ninguna'
                 });
 
-                const { data: cont } = await supabase.from("contratos").select("*").eq("empleado_id", emp.id).eq('activo', true).single();
+                const { data: cont } = await supabase.from("contratos").select("*").eq("empleado_id", emp.id).eq('activo', true).maybeSingle();
                 setContract(cont);
 
                 if (cont) {
@@ -63,7 +75,7 @@ export default function AdvancedPayrollPage() {
                     setComplements(comp || []);
                 }
 
-                const { data: hr } = await supabase.from("horas_trabajadas").select("*").eq("empleado_id", emp.id).eq('mes', 1).eq('anio', 2026).single();
+                const { data: hr } = await supabase.from("horas_trabajadas").select("*").eq("empleado_id", emp.id).eq('mes', 1).eq('anio', 2026).maybeSingle();
                 setHours(hr);
                 if (hr) {
                     setManualHoursOrdinarias(hr.horas_ordinarias || 160);
@@ -72,7 +84,7 @@ export default function AdvancedPayrollPage() {
                     setManualHoursOrdinarias(160);
                 }
 
-                const { data: ns } = await supabase.from("conceptos_no_salariales").select("*").eq("empleado_id", emp.id).eq('mes', 1).eq('anio', 2026).single();
+                const { data: ns } = await supabase.from("conceptos_no_salariales").select("*").eq("empleado_id", emp.id).eq('mes', 1).eq('anio', 2026).maybeSingle();
                 setNoSalarial(ns);
             }
             setLoading(false);

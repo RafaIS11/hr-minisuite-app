@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 const NAV_ITEMS = [
     { label: "Panel", href: "/", icon: LayoutDashboard },
@@ -28,6 +29,32 @@ const NAV_ITEMS = [
 
 export function MainSidebar() {
     const pathname = usePathname();
+    const [profile, setProfile] = React.useState<{ nombre: string; cargo: string } | null>(null);
+
+    React.useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: emp } = await supabase
+                    .from("empleados")
+                    .select("nombre, cargo")
+                    .eq("email", user.email)
+                    .maybeSingle();
+
+                if (emp) {
+                    setProfile(emp);
+                } else {
+                    setProfile({ nombre: user.email?.split('@')[0] || "Usuario", cargo: "Empleado" });
+                }
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/login";
+    };
 
     return (
         <aside className="fixed left-0 top-0 h-screen w-[260px] border-r-premium bg-surface flex flex-col z-50 print:hidden">
@@ -76,22 +103,30 @@ export function MainSidebar() {
                 })}
             </nav>
 
-            {/* Admin Profile */}
+            {/* User Profile */}
             <div className="p-4 border-t-premium bg-[#F1F1EF]/30 mt-auto">
-                <Link href="/settings">
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-sm group cursor-pointer hover:bg-surface border-[1.5px] border-transparent hover:border-charcoal transition-all duration-200">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-sm group cursor-pointer hover:bg-surface border-[1.5px] border-transparent hover:border-charcoal transition-all duration-200">
+                    <Link href="/settings" className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-10 h-10 rounded-full bg-primary/10 border-premium flex items-center justify-center overflow-hidden">
                             <User className="text-primary" size={20} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-charcoal truncate">Rafael Ibarra</p>
+                            <p className="text-sm font-semibold text-charcoal truncate">
+                                {profile?.nombre || "Cargando..."}
+                            </p>
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-white uppercase tracking-wider">
-                                Empleado
+                                {profile?.cargo || "Empleado"}
                             </span>
                         </div>
+                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="p-2 hover:bg-error/10 rounded-sm transition-colors"
+                        title="Cerrar sesión"
+                    >
                         <LogOut size={16} className="text-charcoal/40 group-hover:text-error transition-colors" />
-                    </div>
-                </Link>
+                    </button>
+                </div>
             </div>
         </aside>
     );

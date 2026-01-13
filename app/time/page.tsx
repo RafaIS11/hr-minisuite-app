@@ -17,6 +17,7 @@ import {
     Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     obtenerEventos,
@@ -52,8 +53,17 @@ export default function CalendarPage() {
 
     const loadEvents = async () => {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
+        const empleado_id = emp?.id || "anonymous";
+
         const now = new Date();
-        const data = await obtenerEventos(now.getMonth() + 1, now.getFullYear());
+        const data = await obtenerEventos(now.getMonth() + 1, now.getFullYear(), empleado_id);
 
         const formatted = data.map(e => ({
             id: e.id,
@@ -115,7 +125,13 @@ export default function CalendarPage() {
         if (selectedEvent?.id) {
             await actualizarEvento(selectedEvent.id, formData);
         } else {
-            await crearEvento(formData);
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: emp } = await supabase.from("empleados").select("id").eq("email", user?.email).maybeSingle();
+
+            await crearEvento({
+                ...formData,
+                empleado_id: emp?.id
+            });
         }
 
         setIsModalOpen(false);

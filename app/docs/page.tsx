@@ -15,6 +15,7 @@ import {
     Loader2,
     Database
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -47,14 +48,24 @@ export default function DocumentsPage() {
 
     const loadData = async () => {
         setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        const { data: emp } = await supabase.from("empleados").select("id").eq("email", user.email).maybeSingle();
+        const empleado_id = emp?.id || "anonymous";
+
         const data = await obtenerDocumentos({
             categoria: selectedCategory,
             cliente: selectedEntity,
-            search: search
+            search: search,
+            empleado_id: empleado_id
         });
         setDocs(data);
 
-        const s = await obtenerEstadisticas();
+        const s = await obtenerEstadisticas(empleado_id);
         setStats(s);
         setLoading(false);
     };
@@ -65,9 +76,13 @@ export default function DocumentsPage() {
 
         setUploading(true);
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: emp } = await supabase.from("empleados").select("id").eq("email", user?.email).maybeSingle();
+
             await subirDocumento(file, {
                 categoria: category,
-                cliente_asociado: client
+                cliente_asociado: client,
+                empleado_id: emp?.id
             });
             setIsUploadOpen(false);
             setFile(null);

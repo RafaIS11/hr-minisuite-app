@@ -77,8 +77,13 @@ export async function obtenerDocumentos(filtros?: {
     categoria?: string;
     cliente?: string;
     search?: string;
+    empleado_id?: string;
 }): Promise<Documento[]> {
     let query = supabase.from('documentos').select('*').order('fecha_subida', { ascending: false });
+
+    if (filtros?.empleado_id) {
+        query = query.eq('empleado_id', filtros.empleado_id);
+    }
 
     if (filtros?.categoria && filtros.categoria !== 'todos') {
         query = query.eq('categoria', filtros.categoria);
@@ -101,7 +106,6 @@ export async function obtenerDocumentos(filtros?: {
 }
 
 export async function eliminarDocumento(id: string): Promise<void> {
-    // Necesitamos el path de storage para borrarlo
     const { data: doc } = await supabase
         .from('documentos')
         .select('url_storage')
@@ -109,8 +113,6 @@ export async function eliminarDocumento(id: string): Promise<void> {
         .single();
 
     if (doc) {
-        // Extraer path de la URL (esto es frágil si cambia la estructura de URL, pero útil para demo)
-        // O mejor: podríamos guardar el path en BD. Para esta demo borramos solo de BD si no tenemos el path exacto.
         const path = doc.url_storage.split('/public/hr-documents/')[1];
         if (path) {
             await supabase.storage.from('hr-documents').remove([path]);
@@ -124,8 +126,13 @@ export function descargarDocumento(url: string) {
     window.open(url, '_blank');
 }
 
-export async function obtenerEstadisticas() {
-    const { data } = await supabase.from('documentos').select('formato');
+export async function obtenerEstadisticas(empleado_id?: string) {
+    let query = supabase.from('documentos').select('formato');
+    if (empleado_id) {
+        query = query.eq('empleado_id', empleado_id);
+    }
+
+    const { data } = await query;
     const stats = {
         total: data?.length || 0,
         pdfs: data?.filter(d => d.formato === 'pdf').length || 0,

@@ -20,20 +20,33 @@ export default function Home() {
   const fetchUserData = async () => {
     setLoading(true);
 
-    // 1. Obtener el primer empleado como usuario de prueba
-    const { data: emp } = await supabase.from("empleados").select("*").limit(1).single();
+    // 1. Obtener la sesión actual del usuario autenticado
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // 2. Buscar al empleado por su email de autenticación
+    const { data: emp } = await supabase
+      .from("empleados")
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
 
     if (emp) {
-      // 2. Obtener tareas desde calendario_eventos
+      // 3. Obtener tareas filtradas por este empleado
       const { data: tasks } = await supabase
         .from("calendario_eventos")
         .select("*")
         .eq("tipo_evento", "tarea")
         .eq("estado", "pendiente")
+        .eq("empleado_id", emp.id)
         .order("fecha_inicio", { ascending: true })
         .limit(5);
 
-      // 3. Obtener nómina/horas si existen
+      // 4. Obtener nómina/horas si existen para este empleado
       const { data: salaryData } = await supabase
         .from("horas_trabajadas")
         .select("*")
@@ -41,7 +54,7 @@ export default function Home() {
         .order("anio", { ascending: false })
         .order("mes", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const monthlyGross = (Number(emp.salario_bruto_anual) || 0) / 12;
       const dailyGross = monthlyGross / 22;
@@ -53,6 +66,15 @@ export default function Home() {
         proximaNomina: monthlyGross
       });
       setRecentTasks(tasks || []);
+    } else {
+      // Caso de usuario autenticado pero no registrado en la tabla de empleados
+      setUserStats({
+        ingresosHoy: 0,
+        tareasPendientes: 0,
+        objetivosCompletados: 0,
+        proximaNomina: 0
+      });
+      setRecentTasks([]);
     }
 
     setLoading(false);
