@@ -25,12 +25,26 @@ export default function SettingsPage() {
     useEffect(() => {
         async function fetchEmployee() {
             setLoading(true);
-            const { data } = await supabase.from("empleados").select("*").limit(1).single();
-            if (data) setEmployee(data);
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                const { data } = await supabase
+                    .from("empleados")
+                    .select("*")
+                    .eq("email", user.email)
+                    .maybeSingle();
+
+                if (data) setEmployee(data);
+            }
             setLoading(false);
         }
         fetchEmployee();
     }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/login";
+    };
 
     if (loading) return <div className="p-8 animate-pulse italic">Cargando perfil...</div>;
 
@@ -55,7 +69,10 @@ export default function SettingsPage() {
                             <button className="w-full py-4 text-xs font-bold uppercase tracking-widest border-premium hover:bg-[#F1F1EF] transition-colors rounded-sm shadow-sm">
                                 Cambiar Foto
                             </button>
-                            <button className="w-full py-4 text-xs font-bold uppercase tracking-widest bg-charcoal text-white rounded-sm hover:translate-y-[-2px] transition-transform">
+                            <button
+                                onClick={handleLogout}
+                                className="w-full py-4 text-xs font-bold uppercase tracking-widest bg-charcoal text-white rounded-sm hover:translate-y-[-2px] transition-transform"
+                            >
                                 <LogOut className="inline mr-2" size={14} /> Cerrar Sesión
                             </button>
                         </div>
@@ -72,21 +89,21 @@ export default function SettingsPage() {
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/20">Correo Corporativo</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal">
                                     <Mail size={16} className="text-primary" />
-                                    <span>{employee?.email || 'rafa@empresa.com'}</span>
+                                    <span>{employee?.email || 'No disponible'}</span>
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/20">Teléfono</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal">
                                     <Phone size={16} className="text-primary" />
-                                    <span>+34 600 000 000</span>
+                                    <span>{employee?.telefono || '+34 --- --- ---'}</span>
                                 </div>
                             </div>
                             <div className="md:col-span-2 space-y-1">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/20">Dirección</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal">
                                     <MapPin size={16} className="text-primary" />
-                                    <span>{employee?.direccion || 'Calle de la Empresa 1, 28001 Madrid'}</span>
+                                    <span>{employee?.direccion || 'No especificada'}</span>
                                 </div>
                             </div>
                         </div>
@@ -108,7 +125,7 @@ export default function SettingsPage() {
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-charcoal/20">Departamento</label>
                                 <div className="flex items-center gap-3 text-sm font-medium text-charcoal">
                                     <Building size={16} className="text-primary" />
-                                    <span>Operaciones Tech</span>
+                                    <span>{employee?.departamento || 'Sin asignar'}</span>
                                 </div>
                             </div>
                         </div>

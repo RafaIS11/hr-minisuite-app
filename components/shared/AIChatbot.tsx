@@ -38,10 +38,17 @@ export default function AIChatbot() {
     }, [messages, loading]);
 
     useEffect(() => {
-        // Cargar empleado al inicio
+        // Cargar empleado al inicio basado en la sesión real
         async function loadEmployee() {
-            const { data } = await supabase.from("empleados").select("id").eq('email', 'rafa@hr-minisuite.com').single();
-            setEmployee(data);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: emp } = await supabase
+                    .from("empleados")
+                    .select("id")
+                    .eq('email', user.email)
+                    .maybeSingle();
+                setEmployee(emp);
+            }
         }
         loadEmployee();
     }, []);
