@@ -14,7 +14,9 @@ import {
     CheckCircle,
     Paperclip,
     FileText,
-    Download
+    Download,
+    AlertCircle,
+    RefreshCw
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -322,10 +324,28 @@ export default function MessagesPage() {
 
                                 <div className="p-6 bg-white border-t-premium pr-24 relative z-[50]">
                                     {!currentUser && (
-                                        <div className="absolute inset-0 z-[60] bg-white/80 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
-                                            <p className="text-xs font-bold uppercase tracking-widest text-primary italic">
-                                                ⚠️ Debes configurar tu perfil en "Ajustes" para empezar a chatear.
-                                            </p>
+                                        <div className="absolute inset-0 z-[100] bg-white/95 backdrop-blur-[4px] flex flex-col items-center justify-center p-6 text-center space-y-4">
+                                            <AlertCircle className="text-primary" size={32} />
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-bold uppercase tracking-widest text-charcoal">Configuración Necesaria</p>
+                                                <p className="text-[10px] font-medium text-charcoal/60 italic max-w-xs">
+                                                    Debes activar tu perfil en "Ajustes" antes de poder enviar mensajes.
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <a
+                                                    href="/settings"
+                                                    className="bg-primary text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-sm shadow-sm hover:bg-black transition-colors"
+                                                >
+                                                    Ir a Ajustes
+                                                </a>
+                                                <button
+                                                    onClick={fetchEmployeesRecords}
+                                                    className="bg-[#F1F1EF] text-charcoal px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-sm border-premium hover:bg-white transition-colors flex items-center gap-2"
+                                                >
+                                                    <RefreshCw size={12} /> Ya lo he guardado
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                     <form
