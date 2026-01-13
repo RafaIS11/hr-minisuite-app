@@ -81,17 +81,21 @@ export default function MessagesPage() {
         }
     };
 
+    const fetchTasks = async () => {
+        const { data: t } = await supabase.from("tareas").select("*").eq("status", "pendiente");
+        if (t) setTasks(t);
+    };
+
     useEffect(() => {
         async function init() {
             setLoading(true);
             await fetchEmployeesRecords();
-            const { data: t } = await supabase.from("tareas").select("*").eq("status", "pendiente");
-            if (t) setTasks(t);
+            await fetchTasks();
             setLoading(false);
         }
         init();
 
-        // Suscripción en tiempo real al directorio de empleados
+        // Real-time subscription to employee directory
         const employeesChannel = supabase
             .channel('directory_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'empleados' }, () => {
@@ -99,8 +103,17 @@ export default function MessagesPage() {
             })
             .subscribe();
 
+        // Real-time subscription to tasks (Inbox)
+        const tasksChannel = supabase
+            .channel('tasks_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'tareas' }, () => {
+                fetchTasks();
+            })
+            .subscribe();
+
         return () => {
             supabase.removeChannel(employeesChannel);
+            supabase.removeChannel(tasksChannel);
         };
     }, []);
 
@@ -201,11 +214,14 @@ export default function MessagesPage() {
                     <button
                         onClick={() => setActiveTab("tasks")}
                         className={cn(
-                            "px-6 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all",
+                            "px-6 py-2 text-xs font-bold uppercase tracking-widest rounded-sm transition-all flex items-center gap-2",
                             activeTab === "tasks" ? "bg-white text-charcoal shadow-sm" : "text-charcoal/40 hover:text-charcoal"
                         )}
                     >
                         Mi Inbox
+                        {tasks.length > 0 && (
+                            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                        )}
                     </button>
                 </div>
             </header>
