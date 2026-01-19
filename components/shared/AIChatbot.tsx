@@ -107,13 +107,13 @@ export default function AIChatbot() {
             {/* Floating Action Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-8 left-[280px] z-[100] bg-charcoal text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group"
+                className="fixed bottom-8 right-8 z-[100] bg-charcoal text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group"
             >
                 <div className="relative">
                     <MessageSquare size={24} />
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-charcoal animate-pulse" />
                 </div>
-                <div className="absolute left-full ml-4 bg-white text-charcoal px-4 py-2 rounded-sm border-premium text-[10px] font-bold uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap swiss-shadow">
+                <div className="absolute right-full mr-4 bg-white text-charcoal px-4 py-2 rounded-sm border-premium text-[10px] font-bold uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap swiss-shadow">
                     ¿En qué puedo ayudarte?
                 </div>
             </button>
@@ -122,10 +122,10 @@ export default function AIChatbot() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 100, scale: 0.9, transformOrigin: "bottom left" }}
+                        initial={{ opacity: 0, y: 100, scale: 0.9, transformOrigin: "bottom right" }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                        className="fixed bottom-24 left-[280px] w-[400px] h-[600px] bg-white border-premium shadow-2xl z-[110] flex flex-col overflow-hidden"
+                        className="fixed bottom-24 right-8 w-[400px] h-[600px] bg-white border-premium shadow-2xl z-[110] flex flex-col overflow-hidden"
                     >
                         {/* Header */}
                         <header className="bg-charcoal p-6 text-white flex justify-between items-center border-b border-white/10">

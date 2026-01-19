@@ -100,9 +100,17 @@ export async function POST(req: Request) {
         }
 
         const rawResult = apiData.candidates[0].content.parts[0].text;
-        const result = JSON.parse(rawResult);
 
-        return NextResponse.json(result);
+        try {
+            const result = JSON.parse(rawResult);
+            return NextResponse.json(result);
+        } catch (parseError) {
+            console.error("Parse Error:", rawResult);
+            return NextResponse.json({
+                text: rawResult, // A veces Gemini devuelve texto plano si falla el formato
+                action: { detected: false }
+            });
+        }
     } catch (error) {
         console.error("Agent AI Error:", error);
         return NextResponse.json({
