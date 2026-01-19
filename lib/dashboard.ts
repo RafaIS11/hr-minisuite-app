@@ -1,3 +1,4 @@
+// Dashboard Utilities V3.1 - Refined and Functional
 import { supabase } from './supabase';
 
 export interface DashboardStats {
