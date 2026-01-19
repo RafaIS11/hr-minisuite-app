@@ -189,45 +189,43 @@ export default function DocumentsPage() {
     return (
         <div className="min-h-screen bg-[#FAFAF8] text-[#37352f] font-sans selection:bg-[#714A38]/10 overflow-x-hidden">
             {/* --- NOTION STYLE HEADER --- */}
-            <div className="max-w-full mx-auto px-12 pt-16">
-                <div className="flex items-center justify-between mb-8">
+            <div className="max-w-full mx-auto px-6 lg:px-12 pt-12 lg:pt-16">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#714A38] rounded-[3px] flex items-center justify-center border-[1.5px] border-[#2C2C2A] shadow-sm">
-                            <span className="text-white font-black text-2xl">H</span>
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#714A38] rounded-[3px] flex items-center justify-center border-[1.5px] border-[#2C2C2A] shadow-sm">
+                            <span className="text-white font-black text-xl lg:text-2xl">H</span>
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-[#2C2C2A] flex items-center gap-3">
-                                <FileText className="opacity-10" /> Documentos de Empresa
+                            <h1 className="text-xl lg:text-3xl font-black text-[#2C2C2A] flex items-center gap-3">
+                                <FileText className="opacity-10 hidden sm:block" /> Documentos
                             </h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] font-black uppercase text-[#714A38] tracking-[0.3em]">Protocol 5 Active Database</span>
-                                <div className="w-1 h-1 bg-[#2C2C2A]/20 rounded-full" />
-                                <span className="text-[10px] font-bold opacity-30">Full Interactive v3.1</span>
+                                <span className="text-[10px] font-black uppercase text-[#714A38] tracking-[0.3em]">Protocol 5 Active</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Control Toolbar */}
-                <div className="flex items-center justify-between py-2 border-b-[1.5px] border-[#2C2C2A]/10 mb-2">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between py-4 lg:py-2 border-b-[1.5px] border-[#2C2C2A]/10 mb-4 lg:mb-2 gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-[#714A38] text-white rounded-[3px] text-[12px] font-bold border-[1.5px] border-[#2C2C2A] shadow-sm cursor-default">
                             <ExcelIcon size={14} /> Base de Datos
                         </div>
-                        <div className="flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium opacity-40 hover:opacity-100 cursor-pointer transition-opacity border-[1.5px] border-transparent hover:border-[#2C2C2A]/10 rounded-[3px]">
+                        <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 text-[13px] font-medium opacity-40 hover:opacity-100 cursor-pointer transition-opacity border-[1.5px] border-transparent hover:border-[#2C2C2A]/10 rounded-[3px]">
                             <Plus size={14} /> Nueva vista
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="relative group mr-2">
+                    <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto">
+                        <div className="relative group flex-1 lg:flex-initial lg:mr-2">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#37352f]/30 group-focus-within:text-[#714A38]" size={14} />
                             <input
                                 type="text"
-                                placeholder="Buscar en la base..."
+                                placeholder="Buscar..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 pr-4 py-1.5 bg-transparent border-none text-[13px] outline-none w-48 focus:w-80 transition-all placeholder:opacity-30"
+                                className="pl-9 pr-4 py-1.5 bg-transparent border-none text-[13px] outline-none w-full lg:w-48 lg:focus:w-80 transition-all placeholder:opacity-30"
                             />
                         </div>
 
@@ -339,151 +337,153 @@ export default function DocumentsPage() {
             </div>
 
             {/* --- DATA GRID --- */}
-            <div className="max-w-full mx-auto px-12 pb-24">
-                <div className="border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-hidden rounded-[3px]">
-                    {/* Header */}
-                    <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
-                        <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
-                            <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm" />
-                        </div>
-                        <div
-                            onClick={() => handleSort('nombre_archivo')}
-                            className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
-                        >
-                            <Type size={14} className="opacity-40" /> NOMBRE
-                            {sortConfig?.key === 'nombre_archivo' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
-                        </div>
-                        <div
-                            onClick={() => handleSort('tipo')}
-                            className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
-                        >
-                            <Tag size={14} className="opacity-40" /> CATEGORÍA
-                            {sortConfig?.key === 'tipo' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
-                        </div>
-                        <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
-                            <Layers size={14} className="opacity-40" /> ESTADO
-                        </div>
-                        <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
-                            <User size={14} className="opacity-40" /> PROPIETARIO
-                        </div>
-                        <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
-                            <AlignLeft size={14} className="opacity-40" /> DESCRIPCIÓN
-                        </div>
-                        <div
-                            onClick={() => handleSort('fecha_subida')}
-                            className="p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
-                        >
-                            <Clock size={14} className="opacity-40" /> CREADO
-                            {sortConfig?.key === 'fecha_subida' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
-                        </div>
-                    </div>
-
-                    {/* Body */}
-                    <div className="divide-y-[1.5px] divide-[#2C2C2A]/10">
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center p-24 gap-4">
-                                <Loader2 className="animate-spin text-[#714A38]" size={40} />
-                                <p className="text-[12px] font-black uppercase tracking-[0.4em] opacity-30 animate-pulse">Establishing Connection...</p>
+            <div className="max-w-full mx-auto px-6 lg:px-12 pb-24">
+                <div className="border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
+                    <div className="min-w-[1000px]">
+                        {/* Header */}
+                        <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
+                            <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
+                                <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm" />
                             </div>
-                        ) : docs.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-32 gap-6 bg-[#FAFAF8]/50">
-                                <SearchX size={40} className="opacity-10" />
-                                <div className="text-center">
-                                    <p className="text-[16px] font-black uppercase tracking-tight">VISTA VACÍA</p>
-                                    <p className="text-[12px] opacity-40 mt-1 font-medium italic">No hay documentos con estos criterios.</p>
-                                </div>
-                            </div>
-                        ) : docs.map((doc) => (
-                            <motion.div
-                                layout
-                                key={doc.id}
-                                className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none group/item"
+                            <div
+                                onClick={() => handleSort('nombre_archivo')}
+                                className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
                             >
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
-                                    <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm opacity-0 group-hover/row:opacity-100 transition-opacity" />
-                                </div>
-
-                                {/* Prop: Name */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 relative flex items-center gap-3 overflow-hidden">
-                                    {getFileIcon(doc.formato)}
-                                    <span
-                                        className="text-[13px] font-bold text-[#2C2C2A] truncate hover:underline underline-offset-4 cursor-pointer"
-                                        onClick={() => handleOpenDoc(doc)}
-                                    >
-                                        {doc.nombre_archivo}
-                                    </span>
-
-                                    <div
-                                        onClick={() => handleOpenDoc(doc)}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 bg-white border-[1.5px] border-[#2C2C2A] rounded-[3px] px-2 py-1 flex items-center gap-2 text-[10px] font-black uppercase cursor-pointer hover:bg-[#714A38] hover:text-white transition-all shadow-sm"
-                                    >
-                                        <Maximize2 size={12} /> OPEN
-                                    </div>
-                                </div>
-
-                                {/* Prop: Type */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
-                                    <div className={cn(
-                                        "inline-flex items-center px-2 py-0.5 rounded-[3px] text-[11px] font-black uppercase tracking-tight",
-                                        TIPOS.find(t => t.id === doc.tipo)?.color || 'bg-gray-100 text-gray-700'
-                                    )}>
-                                        {doc.tipo}
-                                    </div>
-                                </div>
-
-                                {/* Prop: Status */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
-                                    {doc.estado ? (
-                                        <div className={cn(
-                                            "flex items-center gap-1.5 px-2 py-1 rounded-[3px] border border-transparent transition-colors",
-                                            ESTADOS.find(e => e.id === doc.estado)?.color
-                                        )}>
-                                            {React.createElement(ESTADOS.find(e => e.id === doc.estado)?.icon || Circle, { size: 12 })}
-                                            <span className="text-[12px] font-bold">{ESTADOS.find(e => e.id === doc.estado)?.label}</span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-[12px] opacity-20 italic">No definido</span>
-                                    )}
-                                </div>
-
-                                {/* Prop: Owner */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[10px] font-black border border-[#2C2C2A]">R</div>
-                                        <span className="text-[12px] font-bold opacity-60">Rafael I.</span>
-                                    </div>
-                                </div>
-
-                                {/* Prop: Description */}
-                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
-                                    <span className="text-[12px] text-[#2C2C2A]/40 truncate">
-                                        {doc.descripcion || ""}
-                                    </span>
-                                </div>
-
-                                {/* Prop: Date */}
-                                <div className="p-3 flex items-center justify-between group/cell" onClick={() => handleOpenDoc(doc)}>
-                                    <span className="text-[12px] font-bold tabular-nums opacity-60">
-                                        {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
-                                    </span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                                        className="opacity-0 group-hover/row:opacity-100 p-1 hover:bg-red-50 text-red-500 transition-all rounded-sm"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))}
-
-                        <div
-                            onClick={() => setIsUploadOpen(true)}
-                            className="grid grid-cols-[38px_1fr] hover:bg-[#F1F1EF] cursor-pointer transition-colors text-[#37352f]/20 group"
-                        >
-                            <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center justify-center">
-                                <Plus size={18} />
+                                <Type size={14} className="opacity-40" /> NOMBRE
+                                {sortConfig?.key === 'nombre_archivo' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                             </div>
-                            <div className="p-3 text-[14px] font-bold uppercase tracking-widest opacity-40 group-hover:opacity-100">Nueva línea de datos...</div>
+                            <div
+                                onClick={() => handleSort('tipo')}
+                                className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
+                            >
+                                <Tag size={14} className="opacity-40" /> CATEGORÍA
+                                {sortConfig?.key === 'tipo' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                            </div>
+                            <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
+                                <Layers size={14} className="opacity-40" /> ESTADO
+                            </div>
+                            <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
+                                <User size={14} className="opacity-40" /> PROPIETARIO
+                            </div>
+                            <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2">
+                                <AlignLeft size={14} className="opacity-40" /> DESCRIPCIÓN
+                            </div>
+                            <div
+                                onClick={() => handleSort('fecha_subida')}
+                                className="p-3 text-[11px] font-black text-[#2C2C2A]/40 uppercase tracking-widest flex items-center gap-2 hover:bg-[#F1F1EF] cursor-pointer transition-colors"
+                            >
+                                <Clock size={14} className="opacity-40" /> CREADO
+                                {sortConfig?.key === 'fecha_subida' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="divide-y-[1.5px] divide-[#2C2C2A]/10">
+                            {loading ? (
+                                <div className="flex flex-col items-center justify-center p-24 gap-4">
+                                    <Loader2 className="animate-spin text-[#714A38]" size={40} />
+                                    <p className="text-[12px] font-black uppercase tracking-[0.4em] opacity-30 animate-pulse">Establishing Connection...</p>
+                                </div>
+                            ) : docs.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-32 gap-6 bg-[#FAFAF8]/50">
+                                    <SearchX size={40} className="opacity-10" />
+                                    <div className="text-center">
+                                        <p className="text-[16px] font-black uppercase tracking-tight">VISTA VACÍA</p>
+                                        <p className="text-[12px] opacity-40 mt-1 font-medium italic">No hay documentos con estos criterios.</p>
+                                    </div>
+                                </div>
+                            ) : docs.map((doc) => (
+                                <motion.div
+                                    layout
+                                    key={doc.id}
+                                    className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none group/item"
+                                >
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
+                                        <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm opacity-0 group-hover/row:opacity-100 transition-opacity" />
+                                    </div>
+
+                                    {/* Prop: Name */}
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 relative flex items-center gap-3 overflow-hidden">
+                                        {getFileIcon(doc.formato)}
+                                        <span
+                                            className="text-[13px] font-bold text-[#2C2C2A] truncate hover:underline underline-offset-4 cursor-pointer"
+                                            onClick={() => handleOpenDoc(doc)}
+                                        >
+                                            {doc.nombre_archivo}
+                                        </span>
+
+                                        <div
+                                            onClick={() => handleOpenDoc(doc)}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 bg-white border-[1.5px] border-[#2C2C2A] rounded-[3px] px-2 py-1 flex items-center gap-2 text-[10px] font-black uppercase cursor-pointer hover:bg-[#714A38] hover:text-white transition-all shadow-sm"
+                                        >
+                                            <Maximize2 size={12} /> OPEN
+                                        </div>
+                                    </div>
+
+                                    {/* Prop: Type */}
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                        <div className={cn(
+                                            "inline-flex items-center px-2 py-0.5 rounded-[3px] text-[11px] font-black uppercase tracking-tight",
+                                            TIPOS.find(t => t.id === doc.tipo)?.color || 'bg-gray-100 text-gray-700'
+                                        )}>
+                                            {doc.tipo}
+                                        </div>
+                                    </div>
+
+                                    {/* Prop: Status */}
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                        {doc.estado ? (
+                                            <div className={cn(
+                                                "flex items-center gap-1.5 px-2 py-1 rounded-[3px] border border-transparent transition-colors",
+                                                ESTADOS.find(e => e.id === doc.estado)?.color
+                                            )}>
+                                                {React.createElement(ESTADOS.find(e => e.id === doc.estado)?.icon || Circle, { size: 12 })}
+                                                <span className="text-[12px] font-bold">{ESTADOS.find(e => e.id === doc.estado)?.label}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-[12px] opacity-20 italic">No definido</span>
+                                        )}
+                                    </div>
+
+                                    {/* Prop: Owner */}
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[10px] font-black border border-[#2C2C2A]">R</div>
+                                            <span className="text-[12px] font-bold opacity-60">Rafael I.</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Prop: Description */}
+                                    <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center" onClick={() => handleOpenDoc(doc)}>
+                                        <span className="text-[12px] text-[#2C2C2A]/40 truncate">
+                                            {doc.descripcion || ""}
+                                        </span>
+                                    </div>
+
+                                    {/* Prop: Date */}
+                                    <div className="p-3 flex items-center justify-between group/cell" onClick={() => handleOpenDoc(doc)}>
+                                        <span className="text-[12px] font-bold tabular-nums opacity-60">
+                                            {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                                        </span>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
+                                            className="opacity-0 group-hover/row:opacity-100 p-1 hover:bg-red-50 text-red-500 transition-all rounded-sm"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            <div
+                                onClick={() => setIsUploadOpen(true)}
+                                className="grid grid-cols-[38px_1fr] hover:bg-[#F1F1EF] cursor-pointer transition-colors text-[#37352f]/20 group"
+                            >
+                                <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-3 flex items-center justify-center">
+                                    <Plus size={18} />
+                                </div>
+                                <div className="p-3 text-[14px] font-bold uppercase tracking-widest opacity-40 group-hover:opacity-100">Nueva línea de datos...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -502,7 +502,7 @@ export default function DocumentsPage() {
                         <motion.div
                             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 28, stiffness: 220 }}
-                            className="relative w-full max-w-2xl bg-white h-screen border-l-[1.5px] border-[#2C2C2A] shadow-[-30px_0_60px_rgba(44,44,42,0.15)] flex flex-col"
+                            className="relative w-full lg:max-w-2xl bg-white h-screen border-l-[1.5px] border-[#2C2C2A] shadow-[-30px_0_60px_rgba(44,44,42,0.15)] flex flex-col"
                         >
                             {/* Header Toolbar */}
                             <div className="px-6 py-4 border-b-[1.5px] border-[#2C2C2A]/10 flex items-center justify-between bg-white sticky top-0 z-10">
@@ -531,7 +531,7 @@ export default function DocumentsPage() {
                             </div>
 
                             {/* Editor Body */}
-                            <div className="flex-1 overflow-y-auto px-16 py-14 scroll-smooth">
+                            <div className="flex-1 overflow-y-auto px-6 lg:px-16 py-8 lg:py-14 scroll-smooth">
                                 {/* Title Area */}
                                 <div className="mb-14">
                                     <div className="flex items-start gap-6 mb-8">
@@ -543,7 +543,7 @@ export default function DocumentsPage() {
                                                 type="text"
                                                 value={editValues.nombre_archivo}
                                                 onChange={(e) => setEditValues({ ...editValues, nombre_archivo: e.target.value })}
-                                                className="w-full text-4xl font-black text-[#2C2C2A] leading-tight focus:outline-none bg-transparent border-none p-0"
+                                                className="w-full text-2xl lg:text-4xl font-black text-[#2C2C2A] leading-tight focus:outline-none bg-transparent border-none p-0"
                                                 placeholder="Sin título"
                                             />
                                             <div className="flex items-center gap-2 mt-2 opacity-30 text-[10px] font-bold uppercase tracking-widest">
@@ -555,41 +555,41 @@ export default function DocumentsPage() {
                                     {/* Properties Interface (Interactive Inputs) */}
                                     <div className="space-y-[1px] border-t border-b border-[#2C2C2A]/10 py-8 mb-12">
                                         {/* Property: Category */}
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] items-start sm:items-center py-4 sm:py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group gap-2 sm:gap-0">
                                             <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
                                                 <Tag size={14} /> CATEGORÍA
                                             </div>
                                             <select
                                                 value={editValues.tipo}
                                                 onChange={(e) => setEditValues({ ...editValues, tipo: e.target.value as any })}
-                                                className="bg-transparent border-none text-[13px] font-black uppercase text-[#714A38] outline-none cursor-pointer hover:bg-white rounded px-2"
+                                                className="bg-[#FAFAF8] sm:bg-transparent border-none text-[13px] font-black uppercase text-[#714A38] outline-none cursor-pointer hover:bg-white rounded px-2 py-1 sm:py-0 w-full sm:w-auto"
                                             >
                                                 {TIPOS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                                             </select>
                                         </div>
 
                                         {/* Property: Status */}
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] items-start sm:items-center py-4 sm:py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group gap-2 sm:gap-0">
                                             <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
                                                 <Layers size={14} /> ESTADO
                                             </div>
                                             <select
                                                 value={editValues.estado}
                                                 onChange={(e) => setEditValues({ ...editValues, estado: e.target.value as any })}
-                                                className="bg-transparent border-none text-[13px] font-black uppercase text-green-700 outline-none cursor-pointer hover:bg-white rounded px-2"
+                                                className="bg-[#FAFAF8] sm:bg-transparent border-none text-[13px] font-black uppercase text-green-700 outline-none cursor-pointer hover:bg-white rounded px-2 py-1 sm:py-0 w-full sm:w-auto"
                                             >
                                                 {ESTADOS.map(e => <option key={e.id} value={e.id}>{e.label}</option>)}
                                             </select>
                                         </div>
 
                                         {/* Property: User (Relation) */}
-                                        <div className="grid grid-cols-[160px_1fr] items-center py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] items-start sm:items-center py-4 sm:py-2 px-3 hover:bg-[#F1F1EF] transition-colors rounded-[3px] group gap-2 sm:gap-0">
                                             <div className="text-[12px] text-[#2C2C2A]/40 font-bold flex items-center gap-3 uppercase tracking-tighter cursor-default">
                                                 <User size={14} /> DUEÑO
                                             </div>
-                                            <div className="flex items-center gap-2 px-2 py-1 bg-white border border-[#2C2C2A]/10 rounded shadow-sm cursor-pointer hover:border-[#714A38]/30 transition-all">
+                                            <div className="flex items-center gap-2 px-2 py-1 bg-white border border-[#2C2C2A]/10 rounded shadow-sm cursor-pointer hover:border-[#714A38]/30 transition-all w-fit">
                                                 <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[10px] font-black border border-[#2C2C2A]">R</div>
-                                                <span className="text-[13px] font-bold">Rafael Ibarra (Admin)</span>
+                                                <span className="text-[13px] font-bold">Rafael Ibarra</span>
                                             </div>
                                         </div>
 
@@ -607,9 +607,9 @@ export default function DocumentsPage() {
                                     {/* Action Button */}
                                     <button
                                         onClick={() => descargarDocumento(selectedDoc.url_storage)}
-                                        className="w-full py-5 bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A] text-[15px] font-black uppercase tracking-[0.2em] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:bg-[#2C2C2A] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-4 group"
+                                        className="w-full py-5 bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A] text-[13px] lg:text-[15px] font-black uppercase tracking-[0.2em] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:bg-[#2C2C2A] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-4 group"
                                     >
-                                        <Download size={22} className="group-hover:animate-bounce" /> DESCARGAR ASSET SOBERANO
+                                        <Download size={20} className="group-hover:animate-bounce" /> DESCARGAR ACTIVO
                                     </button>
                                 </div>
 
@@ -638,7 +638,7 @@ export default function DocumentsPage() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsUploadOpen(false)} className="absolute inset-0 bg-[#2C2C2A]/85 backdrop-blur-md" />
                         <motion.div
                             initial={{ translateY: 40, opacity: 0 }} animate={{ translateY: 0, opacity: 1 }} exit={{ translateY: 40, opacity: 0 }}
-                            className="relative w-full max-w-2xl bg-white border-[2px] border-[#2C2C2A] shadow-[25px_25px_0px_0px_rgba(44,44,42,0.15)] rounded-[4px] overflow-hidden"
+                            className="relative w-full max-w-2xl bg-white border-[2px] border-[#2C2C2A] shadow-[25px_25px_0px_0px_rgba(44,44,42,0.15)] rounded-[4px] overflow-hidden max-h-[90vh] overflow-y-auto"
                         >
                             <form onSubmit={async (e) => {
                                 e.preventDefault();
@@ -679,18 +679,18 @@ export default function DocumentsPage() {
                                     </button>
                                 </div>
 
-                                <div className="p-10 space-y-10">
+                                <div className="p-6 lg:p-10 space-y-6 lg:space-y-10">
                                     <div
                                         onClick={() => uploadInputRef.current?.click()}
-                                        className="border-[2px] border-dashed border-[#2C2C2A]/20 p-16 text-center cursor-pointer hover:border-[#714A38] hover:bg-[#714A38]/5 group transition-all rounded-[4px] bg-[#FAFAF8]/50"
+                                        className="border-[2px] border-dashed border-[#2C2C2A]/20 p-8 lg:p-16 text-center cursor-pointer hover:border-[#714A38] hover:bg-[#714A38]/5 group transition-all rounded-[4px] bg-[#FAFAF8]/50"
                                     >
                                         <input type="file" ref={uploadInputRef} className="hidden" required />
-                                        <Upload className="text-[#714A38]/30 group-hover:text-[#714A38] mx-auto mb-4" size={36} />
-                                        <p className="text-[16px] font-black text-[#2C2C2A]">Arrastra o selecciona el archivo</p>
-                                        <p className="text-[11px] font-bold uppercase tracking-widest opacity-30 mt-2 italic">PDF, XLSX, DOCX (Max 10MB)</p>
+                                        <Upload className="text-[#714A38]/30 group-hover:text-[#714A38] mx-auto mb-4" size={32} />
+                                        <p className="text-[14px] lg:text-[16px] font-black text-[#2C2C2A]">Selecciona el archivo</p>
+                                        <p className="text-[10px] lg:text-[11px] font-bold uppercase tracking-widest opacity-30 mt-2 italic">PDF, XLSX, DOCX</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-black uppercase text-[#2C2C2A]/40">Categoría</label>
                                             <select name="tipo" className="w-full bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-3 text-[13px] font-black uppercase outline-none focus:border-[#714A38] rounded-[3px]">
@@ -708,13 +708,13 @@ export default function DocumentsPage() {
                                         <textarea name="descripcion" className="w-full min-h-[100px] bg-[#FAFAF8] border-[1.5px] border-[#2C2C2A]/10 p-4 text-[14px] font-medium outline-none focus:border-[#714A38] rounded-[3px] resize-none" placeholder="..." />
                                     </div>
 
-                                    <div className="pt-6 flex justify-end items-center gap-12 border-t-[1.5px] border-[#2C2C2A]/5">
+                                    <div className="pt-6 flex flex-col sm:flex-row justify-end items-center gap-6 sm:gap-12 border-t-[1.5px] border-[#2C2C2A]/5">
                                         <button type="button" onClick={() => setIsUploadOpen(false)} className="text-[12px] font-black uppercase tracking-widest text-[#2C2C2A]/30 hover:text-red-500">ABORTAR</button>
                                         <button
                                             disabled={loading}
-                                            className="px-16 py-4 bg-[#714A38] text-white text-[13px] font-black uppercase tracking-widest border-[1.5px] border-[#2C2C2A] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-30"
+                                            className="w-full sm:w-auto px-16 py-4 bg-[#714A38] text-white text-[13px] font-black uppercase tracking-widest border-[1.5px] border-[#2C2C2A] shadow-[10px_10px_0px_0px_rgba(44,44,42,0.1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-30"
                                         >
-                                            {loading ? <Loader2 className="animate-spin" size={18} /> : "FINALIZAR E IMPORTAR"}
+                                            {loading ? <Loader2 className="animate-spin" size={18} /> : "IMPORTAR"}
                                         </button>
                                     </div>
                                 </div>

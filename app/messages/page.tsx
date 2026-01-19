@@ -16,7 +16,8 @@ import {
     FileText,
     Download,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    ChevronRight
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,7 @@ export default function MessagesPage() {
     const [loading, setLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [showMobileSidebar, setShowMobileSidebar] = useState(true);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -130,6 +132,9 @@ export default function MessagesPage() {
     useEffect(() => {
         if (selectedReceiverId) {
             fetchMessages(selectedReceiverId);
+            if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                setShowMobileSidebar(false);
+            }
             const subscription = supabase
                 .channel('mensajes_realtime')
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensajes' }, () => {
@@ -196,10 +201,10 @@ export default function MessagesPage() {
 
     return (
         <div className="h-screen flex flex-col bg-[#FAFAF8]">
-            <header className="p-8 border-b-premium bg-white flex items-center justify-between">
+            <header className="p-6 lg:p-8 border-b-premium bg-white flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Colaboración</p>
-                    <h1 className="text-4xl font-display tracking-tight text-charcoal">Centro de Comunicación</h1>
+                    <p className="text-[10px] lg:text-sm font-medium text-primary uppercase tracking-widest mb-1">Colaboración</p>
+                    <h1 className="text-2xl lg:text-4xl font-display tracking-tight text-charcoal">Centro de Comunicación</h1>
                 </div>
                 <div className="flex bg-[#F1F1EF] p-1 border-premium rounded-sm">
                     <button
@@ -226,8 +231,11 @@ export default function MessagesPage() {
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden">
-                <div className="w-80 border-r-premium bg-white flex flex-col">
+            <div className="flex-1 flex overflow-hidden relative">
+                <div className={cn(
+                    "w-full lg:w-80 border-r-premium bg-white flex flex-col absolute lg:relative inset-0 z-20 transition-transform duration-300 lg:translate-x-0",
+                    showMobileSidebar ? "translate-x-0" : "-translate-x-full"
+                )}>
                     <div className="p-4 border-b-premium">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/20" size={14} />
@@ -268,12 +276,18 @@ export default function MessagesPage() {
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col bg-[#F1F1EF]/30">
+                <div className="flex-1 flex flex-col bg-[#F1F1EF]/30 w-full h-full">
                     {activeTab === "chat" ? (
                         selectedReceiverId ? (
                             <>
-                                <div className="p-6 border-b-premium bg-white flex items-center justify-between">
+                                <div className="p-4 lg:p-6 border-b-premium bg-white flex items-center justify-between">
                                     <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={() => setShowMobileSidebar(true)}
+                                            className="lg:hidden p-2 text-charcoal/40"
+                                        >
+                                            <ChevronRight size={20} className="rotate-180" />
+                                        </button>
                                         <div className="w-8 h-8 rounded-full bg-[#FAFAF8] border-premium flex items-center justify-center font-bold text-charcoal/40 text-[10px]">
                                             {selectedEmp?.nombre.charAt(0)}
                                         </div>
@@ -289,7 +303,7 @@ export default function MessagesPage() {
                                     </button>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                                <div className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6">
                                     {messages.length === 0 && (
                                         <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
                                             <p className="text-xs font-bold uppercase tracking-widest">No hay mensajes aún</p>
@@ -338,7 +352,7 @@ export default function MessagesPage() {
                                     <div ref={messagesEndRef} />
                                 </div>
 
-                                <div className="p-6 bg-white border-t-premium pr-24 relative z-[50]">
+                                <div className="p-4 lg:p-6 bg-white border-t-premium relative z-[50]">
                                     {!currentUser && (
                                         <div className="absolute inset-0 z-[100] bg-white/95 backdrop-blur-[4px] flex flex-col items-center justify-center p-6 text-center space-y-4">
                                             <AlertCircle className="text-primary" size={32} />
@@ -369,7 +383,7 @@ export default function MessagesPage() {
                                             e.preventDefault();
                                             handleSendMessage();
                                         }}
-                                        className="flex items-center gap-4"
+                                        className="flex items-center gap-2 lg:gap-4"
                                     >
                                         <input
                                             type="file"
@@ -381,16 +395,16 @@ export default function MessagesPage() {
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={isUploading}
-                                            className="p-3 border-premium text-charcoal/40 hover:text-charcoal transition-colors rounded-sm"
+                                            className="p-2 lg:p-3 border-premium text-charcoal/40 hover:text-charcoal transition-colors rounded-sm"
                                         >
-                                            {isUploading ? <Clock className="animate-spin" size={20} /> : <Paperclip size={20} />}
+                                            {isUploading ? <Clock className="animate-spin" size={18} /> : <Paperclip size={18} />}
                                         </button>
                                         <input
                                             type="text"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder="Escribe un mensaje..."
-                                            className="flex-1 bg-[#FAFAF8] border-premium rounded-sm px-6 py-3 text-sm font-medium focus:outline-none focus:border-charcoal transition-colors"
+                                            placeholder="Mensaje..."
+                                            className="flex-1 bg-[#FAFAF8] border-premium rounded-sm px-4 lg:px-6 py-2 lg:py-3 text-sm font-medium focus:outline-none focus:border-charcoal transition-colors"
                                         />
                                         <button
                                             type="submit"

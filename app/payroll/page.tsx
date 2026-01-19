@@ -162,35 +162,35 @@ export default function AdvancedPayrollPage() {
     );
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-12 pb-24 print:p-0">
-            <header className="flex flex-col lg:flex-row items-center justify-between gap-6 print:hidden">
-                <div>
-                    <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Cálculo de Salarios Real</p>
-                    <h1 className="text-4xl font-display tracking-tight text-charcoal uppercase">Simulador de Nómina • 2026</h1>
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8 lg:space-y-12 pb-24 print:p-0">
+            <header className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 print:hidden">
+                <div className="w-full lg:w-auto">
+                    <p className="text-[10px] lg:text-sm font-medium text-primary uppercase tracking-widest mb-1">Cálculo de Salarios Real</p>
+                    <h1 className="text-2xl lg:text-4xl font-display tracking-tight text-charcoal uppercase leading-none">Simulador de Nómina • 2026</h1>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="bg-white border-premium px-6 py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-[#F1F1EF] transition-all swiss-shadow flex items-center gap-2">
-                        <Download size={14} /> Historial
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <button className="flex-1 lg:flex-none justify-center bg-white border-premium px-4 lg:px-6 py-3 lg:py-4 rounded-sm font-bold text-[10px] uppercase tracking-widest hover:bg-[#F1F1EF] transition-all swiss-shadow flex items-center gap-2">
+                        <Download size={14} /> <span className="hidden sm:inline">Historial</span>
                     </button>
                     <button
                         onClick={runAICalculation}
                         disabled={calculating}
-                        className="bg-primary text-white px-8 py-4 rounded-sm font-bold border-premium swiss-shadow hover:translate-y-[-2px] transition-transform flex items-center gap-2 group disabled:opacity-50"
+                        className="flex-1 lg:flex-none justify-center bg-primary text-white px-4 lg:px-8 py-3 lg:py-4 rounded-sm font-bold border-premium swiss-shadow hover:translate-y-[-2px] transition-transform flex items-center gap-2 group disabled:opacity-50"
                     >
                         {calculating ? (
                             <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                         ) : (
                             <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
                         )}
-                        <span className="text-[10px] uppercase tracking-widest">{calculating ? "Calculando..." : calculation ? "Recalcular" : "Calcular Nómina"}</span>
+                        <span className="text-[10px] uppercase tracking-widest whitespace-nowrap">{calculating ? "Calc..." : calculation ? "Recalcular" : "Calcular"}</span>
                     </button>
                     {calculation && (
                         <button
                             onClick={savePayroll}
-                            className="bg-success text-white px-8 py-4 rounded-sm font-bold border-premium swiss-shadow hover:translate-y-[-2px] transition-transform flex items-center gap-2"
+                            className="bg-success text-white px-4 lg:px-8 py-3 lg:py-4 rounded-sm font-bold border-premium swiss-shadow hover:translate-y-[-2px] transition-transform flex items-center gap-2"
                         >
                             <Wallet size={16} />
-                            <span className="text-[10px] uppercase tracking-widest">Guardar en Supabase</span>
+                            <span className="text-[10px] uppercase tracking-widest hidden sm:inline">Guardar en Supabase</span>
                         </button>
                     )}
                 </div>
@@ -480,7 +480,7 @@ export default function AdvancedPayrollPage() {
                                     <div className="bg-[#F1F1EF] p-8 border-premium flex flex-col md:flex-row items-center justify-between gap-8">
                                         <div className="text-center md:text-left">
                                             <p className="text-[10px] font-bold uppercase tracking-widest text-charcoal/40 mb-1">Líquido a Percibir (Neto)</p>
-                                            <p className="text-7xl font-display tracking-tighter text-charcoal leading-none flex items-baseline gap-2">
+                                            <p className="text-5xl lg:text-7xl font-display tracking-tighter text-charcoal leading-none flex items-baseline gap-2 justify-center md:justify-start">
                                                 €{calculation.neto.toFixed(2)}
                                                 <span className="text-xs font-bold text-primary animate-bounce">↓</span>
                                             </p>

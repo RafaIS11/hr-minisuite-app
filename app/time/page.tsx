@@ -241,139 +241,141 @@ export default function CalendarPage() {
     return (
         <div className="h-screen flex flex-col bg-white overflow-hidden">
             <div className="flex-1 flex overflow-hidden">
-                {/* Visual Sidebar Reference: uploaded_image_0 */}
-                <aside className="w-[280px] border-r-premium bg-white flex flex-col p-8 space-y-12 overflow-y-auto z-10">
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">Calendarios</h2>
-                            <Plus size={14} className="text-charcoal/20 cursor-pointer hover:text-charcoal" />
-                        </div>
-                        <div className="space-y-4 pt-4">
-                            {[
-                                { label: "EVENTO", color: "bg-[#704A38]", count: events.filter(e => e.extendedProps.categoria === 'EVENTO').length },
-                                { label: "HORARIOS", color: "bg-[#B8844D]", count: events.filter(e => e.extendedProps.categoria === 'HORARIOS').length },
-                                { label: "PERSONAL", color: "bg-[#4A705B]", count: events.filter(e => e.extendedProps.categoria === 'PERSONAL').length }
-                            ].map(c => (
-                                <div key={c.label} className="flex items-center justify-between group cursor-pointer">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn("w-3 h-3 rounded-full shadow-sm", c.color)} />
-                                        <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal/60 group-hover:text-charcoal transition-colors">
-                                            {c.label}
-                                        </span>
-                                    </div>
-                                    <span className="text-[9px] font-bold text-charcoal/20">{c.count}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {renderMiniCalendar()}
-
-                    <div className="space-y-6">
+                <div className="flex-1 flex overflow-hidden lg:relative">
+                    {/* Visual Sidebar Reference: uploaded_image_0 */}
+                    <aside className="hidden lg:flex w-[280px] border-r-premium bg-white flex-col p-8 space-y-12 overflow-y-auto z-10">
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">My Space</h4>
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">Calendarios</h2>
+                                <Plus size={14} className="text-charcoal/20 cursor-pointer hover:text-charcoal" />
+                            </div>
                             <div className="space-y-4 pt-4">
                                 {[
-                                    { label: "Tareas y Exámenes", icon: <Filter size={14} /> },
-                                    { label: "Tasks", icon: <Filter size={14} /> },
-                                    { label: "Recordatorios", icon: <Bell size={14} /> }
+                                    { label: "EVENTO", color: "bg-[#704A38]", count: events.filter(e => e.extendedProps.categoria === 'EVENTO').length },
+                                    { label: "HORARIOS", color: "bg-[#B8844D]", count: events.filter(e => e.extendedProps.categoria === 'HORARIOS').length },
+                                    { label: "PERSONAL", color: "bg-[#4A705B]", count: events.filter(e => e.extendedProps.categoria === 'PERSONAL').length }
                                 ].map(c => (
-                                    <div key={c.label} className="flex items-center gap-3 cursor-pointer group">
-                                        <span className="text-charcoal/20 group-hover:text-primary transition-colors">{c.icon}</span>
-                                        <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal/60 group-hover:text-charcoal transition-colors">{c.label}</span>
+                                    <div key={c.label} className="flex items-center justify-between group cursor-pointer">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn("w-3 h-3 rounded-full shadow-sm", c.color)} />
+                                            <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal/60 group-hover:text-charcoal transition-colors">
+                                                {c.label}
+                                            </span>
+                                        </div>
+                                        <span className="text-[9px] font-bold text-charcoal/20">{c.count}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    </div>
 
-                    <button className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-charcoal/30 hover:text-charcoal transition-colors pt-8 mt-auto border-t-premium">
-                        <Plus size={14} /> Agregar cuenta de calenda...
-                    </button>
-                </aside>
+                        {renderMiniCalendar()}
 
-                <main className="flex-1 flex flex-col bg-white overflow-hidden relative">
-                    {/* Header */}
-                    <div className="p-6 border-b-premium flex items-center justify-between bg-white/80 backdrop-blur-md z-20">
-                        <div className="flex items-center gap-8">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary italic">Planificación</p>
-                                <h1 className="text-2xl font-display uppercase tracking-tight text-charcoal">Enero 2026</h1>
-                            </div>
-                            <div className="flex bg-[#F1F1EF] p-1 border-premium rounded-sm">
-                                {[
-                                    { label: 'Mes', view: 'dayGridMonth' },
-                                    { label: 'Semana', view: 'timeGridWeek' },
-                                    { label: 'Día', view: 'timeGridDay' },
-                                    { label: 'Agenda', view: 'listWeek' }
-                                ].map((tab) => (
-                                    <button
-                                        key={tab.label}
-                                        onClick={() => changeView(tab.view)}
-                                        className={cn(
-                                            "px-6 py-2 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all",
-                                            currentView === tab.view ? "bg-white shadow-md text-charcoal" : "text-charcoal/30 hover:text-charcoal"
-                                        )}
-                                    >
-                                        {tab.label}
-                                    </button>
-                                ))}
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">My Space</h4>
+                                <div className="space-y-4 pt-4">
+                                    {[
+                                        { label: "Tareas y Exámenes", icon: <Filter size={14} /> },
+                                        { label: "Tasks", icon: <Filter size={14} /> },
+                                        { label: "Recordatorios", icon: <Bell size={14} /> }
+                                    ].map(c => (
+                                        <div key={c.label} className="flex items-center gap-3 cursor-pointer group">
+                                            <span className="text-charcoal/20 group-hover:text-primary transition-colors">{c.icon}</span>
+                                            <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal/60 group-hover:text-charcoal transition-colors">{c.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center bg-[#F1F1EF] rounded-sm border-premium overflow-hidden">
-                                <button onClick={handlePrev} className="p-3 hover:bg-white transition-colors text-charcoal/40 hover:text-charcoal"><ChevronLeft size={18} /></button>
-                                <div className="h-6 w-[1.5px] bg-charcoal/5" />
-                                <button onClick={() => calendarRef.current.getApi().today()} className="px-6 py-2 text-[9px] font-bold uppercase tracking-widest hover:bg-white transition-colors">Hoy</button>
-                                <div className="h-6 w-[1.5px] bg-charcoal/5" />
-                                <button onClick={handleNext} className="p-3 hover:bg-white transition-colors text-charcoal/40 hover:text-charcoal"><ChevronRight size={18} /></button>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setFormData({ ...formData, titulo: '', fecha_inicio: new Date().toISOString().slice(0, 16) });
-                                    setSelectedEvent(null);
-                                    setIsModalOpen(true);
-                                }}
-                                className="bg-charcoal text-white px-6 py-3 text-[9px] font-bold uppercase tracking-widest rounded-sm shadow-xl hover:translate-y-[-2px] active:translate-y-0 transition-all flex items-center gap-3"
-                            >
-                                <Plus size={14} /> Nuevo Registro
-                            </button>
-                        </div>
-                    </div>
 
-                    <div className="flex-1 bg-white overflow-hidden p-8 relative">
-                        {loading && (
-                            <div className="absolute inset-0 bg-white/80 z-[30] flex flex-col items-center justify-center backdrop-blur-sm">
-                                <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-charcoal/40">Sincronizando Calendario...</p>
+                        <button className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-charcoal/30 hover:text-charcoal transition-colors pt-8 mt-auto border-t-premium">
+                            <Plus size={14} /> Agregar cuenta de calenda...
+                        </button>
+                    </aside>
+
+                    <main className="flex-1 flex flex-col bg-white overflow-hidden relative">
+                        {/* Header */}
+                        <div className="p-4 lg:p-6 border-b-premium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md z-20">
+                            <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 w-full sm:w-auto">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary italic">Planificación</p>
+                                    <h1 className="text-xl lg:text-2xl font-display uppercase tracking-tight text-charcoal leading-none">Enero 2026</h1>
+                                </div>
+                                <div className="flex bg-[#F1F1EF] p-1 border-premium rounded-sm overflow-x-auto max-w-full">
+                                    {[
+                                        { label: 'Mes', view: 'dayGridMonth' },
+                                        { label: 'Sem.', view: 'timeGridWeek' },
+                                        { label: 'Día', view: 'timeGridDay' },
+                                        { label: 'Agnd', view: 'listWeek' }
+                                    ].map((tab) => (
+                                        <button
+                                            key={tab.label}
+                                            onClick={() => changeView(tab.view)}
+                                            className={cn(
+                                                "px-3 lg:px-6 py-2 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all whitespace-nowrap",
+                                                currentView === tab.view ? "bg-white shadow-md text-charcoal" : "text-charcoal/30 hover:text-charcoal"
+                                            )}
+                                        >
+                                            {tab.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        )}
-                        <div className="h-full premium-calendar">
-                            <FullCalendar
-                                ref={calendarRef}
-                                plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-                                initialView="dayGridMonth"
-                                headerToolbar={false}
-                                events={events}
-                                editable={true}
-                                selectable={true}
-                                selectMirror={true}
-                                dayMaxEvents={true}
-                                locale="es"
-                                firstDay={1}
-                                height="100%"
-                                select={handleDateSelect}
-                                eventClick={handleEventClick}
-                                eventTimeFormat={{
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    meridiem: false,
-                                    hour12: false
-                                }}
-                            />
+                            <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                                <div className="flex items-center bg-[#F1F1EF] rounded-sm border-premium overflow-hidden">
+                                    <button onClick={handlePrev} className="p-2 lg:p-3 hover:bg-white transition-colors text-charcoal/40 hover:text-charcoal"><ChevronLeft size={16} /></button>
+                                    <div className="h-6 w-[1.5px] bg-charcoal/5" />
+                                    <button onClick={() => calendarRef.current.getApi().today()} className="px-4 lg:px-6 py-2 text-[9px] font-bold uppercase tracking-widest hover:bg-white transition-colors">Hoy</button>
+                                    <div className="h-6 w-[1.5px] bg-charcoal/5" />
+                                    <button onClick={handleNext} className="p-2 lg:p-3 hover:bg-white transition-colors text-charcoal/40 hover:text-charcoal"><ChevronRight size={16} /></button>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setFormData({ ...formData, titulo: '', fecha_inicio: new Date().toISOString().slice(0, 16) });
+                                        setSelectedEvent(null);
+                                        setIsModalOpen(true);
+                                    }}
+                                    className="bg-charcoal text-white p-3 lg:px-6 lg:py-3 text-[9px] font-bold uppercase tracking-widest rounded-sm shadow-xl hover:translate-y-[-2px] active:translate-y-0 transition-all flex items-center gap-3 shrink-0"
+                                >
+                                    <Plus size={14} /> <span className="hidden lg:inline">Nuevo Registro</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </main>
+
+                        <div className="flex-1 bg-white overflow-hidden p-4 lg:p-8 relative">
+                            {loading && (
+                                <div className="absolute inset-0 bg-white/80 z-[30] flex flex-col items-center justify-center backdrop-blur-sm">
+                                    <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-charcoal/40">Sincronizando Calendario...</p>
+                                </div>
+                            )}
+                            <div className="h-full premium-calendar">
+                                <FullCalendar
+                                    ref={calendarRef}
+                                    plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+                                    initialView={typeof window !== 'undefined' && window.innerWidth < 1024 ? 'listWeek' : 'dayGridMonth'}
+                                    headerToolbar={false}
+                                    events={events}
+                                    editable={true}
+                                    selectable={true}
+                                    selectMirror={true}
+                                    dayMaxEvents={true}
+                                    locale="es"
+                                    firstDay={1}
+                                    height="100%"
+                                    select={handleDateSelect}
+                                    eventClick={handleEventClick}
+                                    eventTimeFormat={{
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        meridiem: false,
+                                        hour12: false
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </main>
+                </div>
             </div>
 
             {/* Modal Reference: uploaded_image_1 */}

@@ -162,16 +162,16 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-12 pb-24">
-            <header className="flex items-center justify-between">
+        <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-8 lg:space-y-12 pb-24">
+            <header className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div>
-                    <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Mi Identidad</p>
-                    <h1 className="text-4xl font-display tracking-tight text-charcoal">Configuración de Perfil</h1>
+                    <p className="text-[10px] lg:text-sm font-medium text-primary uppercase tracking-widest mb-1">Mi Identidad</p>
+                    <h1 className="text-2xl lg:text-4xl font-display tracking-tight text-charcoal">Configuración de Perfil</h1>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-charcoal text-white px-8 py-4 rounded-sm font-bold uppercase tracking-widest text-[10px] shadow-lg hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50"
+                    className="w-full lg:w-auto bg-charcoal text-white px-8 py-4 rounded-sm font-bold uppercase tracking-widest text-[10px] shadow-lg hover:bg-black transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                     {saving ? <RefreshCw className="animate-spin" size={16} /> : <Save size={16} />}
                     Guardar Cambios
