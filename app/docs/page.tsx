@@ -246,7 +246,7 @@ export default function DocumentsPage() {
                                         initial={{ opacity: 0, y: 10, scale: 0.98 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                                        className="absolute right-0 top-full mt-2 w-[340px] bg-white border-[1.5px] border-[#2C2C2A] shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[3px] z-[200] p-6"
+                                        className="absolute right-0 top-full mt-2 w-[calc(100vw-32px)] sm:w-[340px] bg-white border-[1.5px] border-[#2C2C2A] shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[3px] z-[200] p-4 sm:p-6"
                                     >
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between border-b pb-4 border-[#2C2C2A]/10">
@@ -302,12 +302,13 @@ export default function DocumentsPage() {
                             </AnimatePresence>
                         </div>
 
-                        <div className="flex items-center ml-2 group/new">
+                        <div className="flex items-center ml-auto lg:ml-2 group/new shrink-0">
                             <button
                                 onClick={() => setIsUploadOpen(true)}
-                                className="bg-[#714A38] hover:bg-[#5a3b2d] text-white text-[13px] font-bold px-4 py-1.5 rounded-l-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-r-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)]"
+                                className="bg-[#714A38] hover:bg-[#5a3b2d] text-white text-[12px] lg:text-[13px] font-bold px-3 lg:px-4 py-1.5 rounded-l-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-r-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)] whitespace-nowrap"
                             >
-                                Nuevo Documento
+                                <span className="hidden sm:inline">Nuevo Documento</span>
+                                <span className="sm:hidden">Nuevo</span>
                             </button>
                             <div className="w-[1.5px] h-[32px] bg-[#2C2C2A]/30 self-stretch" />
                             <button className="bg-[#714A38] hover:bg-[#5a3b2d] text-white px-2 py-1.5 rounded-r-[3px] transition-all border-[1.5px] border-[#2C2C2A] border-l-0 shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)]">
@@ -531,7 +532,7 @@ export default function DocumentsPage() {
                             </div>
 
                             {/* Editor Body */}
-                            <div className="flex-1 overflow-y-auto px-6 lg:px-16 py-8 lg:py-14 scroll-smooth">
+                            <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-16 py-8 lg:py-14 scroll-smooth">
                                 {/* Title Area */}
                                 <div className="mb-14">
                                     <div className="flex items-start gap-6 mb-8">

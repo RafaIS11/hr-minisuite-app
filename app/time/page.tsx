@@ -418,7 +418,7 @@ export default function CalendarPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                                <div className="p-4 lg:p-8 space-y-8 max-h-[75vh] lg:max-h-[70vh] overflow-y-auto custom-scrollbar">
                                     {/* Title Input */}
                                     <input
                                         autoFocus
@@ -426,29 +426,33 @@ export default function CalendarPage() {
                                         type="text"
                                         value={formData.titulo}
                                         onChange={e => setFormData({ ...formData, titulo: e.target.value })}
-                                        className="w-full bg-white/5 border-none p-4 text-xl font-bold rounded-lg outline-none focus:bg-white/10 transition-all placeholder:text-white/20"
+                                        className="w-full bg-white/5 border-none p-4 text-lg lg:text-xl font-bold rounded-lg outline-none focus:bg-white/10 transition-all placeholder:text-white/20"
                                         placeholder="Título del evento..."
                                     />
 
                                     <div className="space-y-6">
                                         {/* Date/Time Row */}
                                         <div className="flex items-start gap-4 group">
-                                            <Clock className="mt-1 text-white/40 group-hover:text-primary transition-colors" size={20} />
+                                            <Clock className="mt-1 text-white/40 group-hover:text-primary transition-colors shrink-0" size={20} />
                                             <div className="flex-1 space-y-4">
-                                                <div className="flex justify-between items-center">
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formData.fecha_inicio}
-                                                        onChange={e => setFormData({ ...formData, fecha_inicio: e.target.value })}
-                                                        className="bg-transparent border-none text-sm font-medium outline-none cursor-pointer hover:text-white transition-colors"
-                                                    />
-                                                    <span className="text-white/20">—</span>
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formData.fecha_fin}
-                                                        onChange={e => setFormData({ ...formData, fecha_fin: e.target.value })}
-                                                        className="bg-transparent border-none text-sm font-medium outline-none cursor-pointer hover:text-white transition-colors"
-                                                    />
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={formData.fecha_inicio}
+                                                            onChange={e => setFormData({ ...formData, fecha_inicio: e.target.value })}
+                                                            className="w-full bg-white/5 sm:bg-transparent border-none text-[13px] sm:text-sm font-medium outline-none p-2 sm:p-0 rounded-md cursor-pointer hover:text-white transition-colors"
+                                                        />
+                                                    </div>
+                                                    <span className="text-white/20 hidden sm:inline">—</span>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={formData.fecha_fin}
+                                                            onChange={e => setFormData({ ...formData, fecha_fin: e.target.value })}
+                                                            className="w-full bg-white/5 sm:bg-transparent border-none text-[13px] sm:text-sm font-medium outline-none p-2 sm:p-0 rounded-md cursor-pointer hover:text-white transition-colors"
+                                                        />
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <label className="flex items-center gap-2 cursor-pointer group">
@@ -578,11 +582,11 @@ export default function CalendarPage() {
                                     </div>
                                 </div>
 
-                                <div className="p-8 border-t border-white/10 flex gap-4 bg-[#1e1e1e]">
+                                <div className="p-4 lg:p-8 border-t border-white/10 flex flex-col sm:flex-row gap-3 lg:gap-4 bg-[#1e1e1e]">
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="flex-1 bg-primary text-white py-4 rounded-lg text-xs font-bold uppercase tracking-[0.2em] shadow-lg hover:shadow-primary/20 hover:translate-y-[-2px] active:translate-y-0 transition-all flex items-center justify-center gap-3"
+                                        className="flex-1 bg-primary text-white py-4 rounded-lg text-xs font-bold uppercase tracking-[0.2em] shadow-lg hover:shadow-primary/20 hover:translate-y-[-2px] active:translate-y-0 transition-all flex items-center justify-center gap-3 order-1 sm:order-2"
                                     >
                                         {loading ? <Loader2 size={16} className="animate-spin" /> : (selectedEvent?.id ? 'Actualizar' : 'Guardar Evento')}
                                     </button>
@@ -590,7 +594,7 @@ export default function CalendarPage() {
                                         <button
                                             type="button"
                                             onClick={handleDelete}
-                                            className="px-6 border border-white/10 text-white/40 hover:text-error hover:border-error transition-all rounded-lg text-xs font-bold uppercase"
+                                            className="w-full sm:w-auto px-6 py-4 border border-white/10 text-white/40 hover:text-error hover:border-error transition-all rounded-lg text-xs font-bold uppercase order-2 sm:order-1"
                                         >
                                             Borrar
                                         </button>
