@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   HandCoins,
   CheckCircle2,
@@ -8,11 +9,24 @@ import {
   Calendar,
   ArrowRight,
   Bell,
-  Plus,
-  Loader2
+  FileText,
+  CreditCard,
+  Loader2,
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { fetchDashboardStats, fetchUpcomingEvents, DashboardStats, UpcomingEvent } from "@/lib/dashboard";
+import {
+  fetchDashboardStats,
+  fetchUpcomingEvents,
+  fetchRecentDocuments,
+  fetchLatestPayroll,
+  DashboardStats,
+  UpcomingEvent,
+  RecentDocument,
+  LatestPayroll
+} from "@/lib/dashboard";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -20,9 +34,11 @@ export default function DashboardPage() {
     proximaNomina: 0,
     tareasPendientes: 0,
     mensajesNuevos: 0,
-    ingresosHoy: 0
+    totalDocumentos: 0
   });
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
+  const [recentDocs, setRecentDocs] = useState<RecentDocument[]>([]);
+  const [latestPayroll, setLatestPayroll] = useState<LatestPayroll | null>(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -30,12 +46,16 @@ export default function DashboardPage() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user?.email) {
-          const [dashboardStats, upcomingEvents] = await Promise.all([
+          const [dashboardStats, upcomingEvents, docs, payroll] = await Promise.all([
             fetchDashboardStats(user.email),
-            fetchUpcomingEvents(user.email)
+            fetchUpcomingEvents(user.email),
+            fetchRecentDocuments(user.email),
+            fetchLatestPayroll(user.email)
           ]);
           setStats(dashboardStats);
           setEvents(upcomingEvents);
+          setRecentDocs(docs);
+          setLatestPayroll(payroll);
         }
       } catch (err) {
         console.error("Dashboard Load Error:", err);
@@ -69,25 +89,21 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <button className="w-12 h-12 rounded-sm border-[1.5px] border-[#2C2C2A] bg-white flex items-center justify-center hover:bg-[#F1F1EF] transition-all">
+          <Link href="/messages" className="relative group">
+            <div className="w-12 h-12 rounded-sm border-[1.5px] border-[#2C2C2A] bg-white flex items-center justify-center group-hover:bg-[#F1F1EF] transition-all">
               <Bell size={20} />
-            </button>
+            </div>
             {stats.mensajesNuevos > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-black flex items-center justify-center rounded-sm border-[1.5px] border-[#2C2C2A]">
                 {stats.mensajesNuevos}
               </span>
             )}
-          </div>
-          <button className="h-12 px-6 bg-[#2C2C2A] text-white flex items-center gap-3 border-[1.5px] border-[#2C2C2A] shadow-[4px_4px_0px_0px_rgba(113,74,56,0.2)] hover:bg-[#714A38] transition-all">
-            <Plus size={16} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Nueva Solicitud</span>
-          </button>
+          </Link>
         </div>
       </header>
 
       {/* Core Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* 1. Salary */}
         <div className="bg-white p-8 border-[1.5px] border-[#2C2C2A] shadow-[8px_8px_0px_0px_rgba(113,74,56,0.05)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -117,67 +133,123 @@ export default function DashboardPage() {
             <span className="text-[10px] font-black uppercase">{stats.tareasPendientes > 0 ? 'En curso' : 'Todo al día'}</span>
           </div>
         </div>
-
-        {/* 3. Daily Stats */}
-        <div className="bg-[#714A38] p-8 border-[1.5px] border-[#2C2C2A] text-white shadow-[8px_8px_0px_0px_rgba(113,74,56,0.1)] relative overflow-hidden group">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">Previsión del Día</p>
-          <h2 className="text-4xl font-black tabular-nums">€{stats.ingresosHoy.toFixed(2)}</h2>
-          <p className="mt-6 text-[9px] font-bold uppercase tracking-widest text-white/30 italic">Basado en salario contractual...</p>
-        </div>
       </div>
 
-      {/* Secondary Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-8">
-        {/* Inbox Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-[1.5px] bg-[#714A38]" />
-            <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">COMUNICACIONES</h3>
-          </div>
-          <div className="bg-[#2C2C2A] p-8 border-[1.5px] border-[#2C2C2A] text-white flex items-center justify-between group cursor-pointer hover:bg-[#714A38] transition-all shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)]">
-            <div className="flex items-center gap-6">
-              <div className="p-4 bg-white/10 rounded-sm">
-                <Bell size={24} />
-              </div>
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.2em]">Centro de Mensajes</p>
-                <p className="text-[12px] font-bold text-white/40 mt-1">{stats.mensajesNuevos} mensajes nuevos</p>
-              </div>
+      {/* Main Grid Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* Left Column: Messages & Recent Docs */}
+        <div className="lg:col-span-8 space-y-12">
+          {/* Communications */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-[1.5px] bg-[#714A38]" />
+              <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">COMUNICACIONES</h3>
             </div>
-            <div className="w-10 h-10 rounded-full border-[1.5px] border-white/20 flex items-center justify-center group-hover:border-white transition-all">
-              <ArrowRight size={18} />
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Events */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-[1.5px] bg-[#714A38]" />
-            <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">PRÓXIMAMENTE</h3>
-          </div>
-          <div className="space-y-4">
-            {events.length > 0 ? (
-              events.map((item) => (
-                <div key={item.id} className="bg-white p-6 border-[1.5px] border-[#2C2C2A] group hover:bg-[#FAFAF8] transition-all cursor-pointer shadow-[6px_6px_0px_0px_rgba(44,44,42,0.02)]">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[#714A38] mb-1">{item.tipo}</p>
-                      <h4 className="text-sm font-bold text-[#2C2C2A]">{item.titulo}</h4>
-                      <p className="text-[11px] text-[#2C2C2A]/40 mt-1 flex items-center gap-2">
-                        <Calendar size={12} /> {new Date(item.fecha_inicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    <ArrowRight size={16} className="text-[#2C2C2A]/20 group-hover:text-[#714A38] transition-colors" />
+            <Link href="/messages" className="block">
+              <div className="bg-[#2C2C2A] p-8 border-[1.5px] border-[#2C2C2A] text-white flex items-center justify-between group cursor-pointer hover:bg-[#714A38] transition-all shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)]">
+                <div className="flex items-center gap-6">
+                  <div className="p-4 bg-white/10 rounded-sm">
+                    <Bell size={24} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em]">Centro de Mensajes</p>
+                    <p className="text-[12px] font-bold text-white/40 mt-1">{stats.mensajesNuevos} mensajes nuevos recibidos</p>
                   </div>
                 </div>
-              ))
+                <div className="w-10 h-10 rounded-full border-[1.5px] border-white/20 flex items-center justify-center group-hover:border-white transition-all">
+                  <ArrowRight size={18} />
+                </div>
+              </div>
+            </Link>
+          </section>
+
+          {/* Recent Documents */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-[1.5px] bg-[#714A38]" />
+                <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">DOCUMENTOS RECIENTES</h3>
+              </div>
+              <Link href="/docs" className="text-[10px] font-black uppercase tracking-widest text-[#714A38] hover:underline flex items-center gap-1">
+                Ver todos <ExternalLink size={10} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {recentDocs.length > 0 ? (
+                recentDocs.map(doc => (
+                  <Link key={doc.id} href="/docs" className="bg-white p-6 border-[1.5px] border-[#2C2C2A] hover:bg-[#FAFAF8] transition-all shadow-[6px_6px_0px_0px_rgba(44,44,42,0.02)] group">
+                    <FileText className="text-[#714A38] mb-4 opacity-40 group-hover:opacity-100 transition-opacity" size={24} />
+                    <h4 className="text-[12px] font-bold text-[#2C2C2A] truncate mb-1">{doc.nombre_archivo}</h4>
+                    <p className="text-[9px] font-black uppercase tracking-widest opacity-30">{doc.tipo}</p>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-3 p-12 border-[1.5px] border-dashed border-[#2C2C2A]/10 text-center rounded-sm">
+                  <p className="text-[10px] font-bold uppercase opacity-30 italic">No hay documentos recientes</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Right Column: Latest Payroll & Events */}
+        <div className="lg:col-span-4 space-y-12">
+          {/* Latest Payroll */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-[1.5px] bg-[#714A38]" />
+              <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">ÚLTIMA NÓMINA</h3>
+            </div>
+            {latestPayroll ? (
+              <div className="bg-[#F1F1EF] p-8 border-[1.5px] border-[#2C2C2A] shadow-[8px_8px_0px_0px_rgba(44,44,42,0.05)] group">
+                <div className="flex items-center justify-between mb-6">
+                  <CreditCard className="text-[#714A38]" size={28} />
+                  <span className="text-[10px] font-black uppercase text-[#2C2C2A]/40 tracking-widest">{latestPayroll.mes} {latestPayroll.anio}</span>
+                </div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#2C2C2A]/40 mb-1">Importe Neto Recibido</p>
+                <h2 className="text-3xl font-black text-[#2C2C2A]">€{latestPayroll.neto_pagar.toLocaleString()}</h2>
+                <Link href="/payroll" className="mt-8 flex items-center justify-center py-3 bg-[#2C2C2A] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#714A38] transition-all">
+                  Detalles de liquidación
+                </Link>
+              </div>
             ) : (
-              <div className="p-10 border-[1.5px] border-dashed border-[#2C2C2A]/10 text-center rounded-sm bg-[#FAFAF8]/50">
-                <p className="text-[10px] font-bold uppercase opacity-30 italic">No hay eventos próximos registrados</p>
+              <div className="p-8 border-[1.5px] border-dashed border-[#2C2C2A]/10 text-center rounded-sm">
+                <p className="text-[10px] font-bold uppercase opacity-30 italic">Sin registros de nómina</p>
               </div>
             )}
-          </div>
+          </section>
+
+          {/* Upcoming Events */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-[1.5px] bg-[#714A38]" />
+              <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">PRÓXIMAMENTE</h3>
+            </div>
+            <div className="space-y-4">
+              {events.length > 0 ? (
+                events.map((item) => (
+                  <Link key={item.id} href="/time" className="block">
+                    <div className="bg-white p-6 border-[1.5px] border-[#2C2C2A] group hover:bg-[#FAFAF8] transition-all shadow-[6px_6px_0px_0px_rgba(44,44,42,0.02)]">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-[#714A38] mb-1">{item.tipo}</p>
+                          <h4 className="text-sm font-bold text-[#2C2C2A]">{item.titulo}</h4>
+                          <p className="text-[10px] text-[#2C2C2A]/40 mt-1 flex items-center gap-2">
+                            <Calendar size={12} /> {new Date(item.fecha_inicio).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <ArrowRight size={16} className="text-[#2C2C2A]/20 group-hover:text-[#714A38] transition-colors" />
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="p-8 border-[1.5px] border-dashed border-[#2C2C2A]/10 text-center rounded-sm bg-[#FAFAF8]/50">
+                  <p className="text-[10px] font-bold uppercase opacity-30 italic">Sin eventos próximos</p>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </div>
     </div>
