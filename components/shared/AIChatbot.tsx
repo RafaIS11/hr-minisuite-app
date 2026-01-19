@@ -107,7 +107,7 @@ export default function AIChatbot() {
             {/* Floating Action Button */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-8 right-8 z-[100] bg-charcoal text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group"
+                className="fixed bottom-6 right-6 lg:bottom-8 lg:right-8 z-[100] bg-charcoal text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95 group"
             >
                 <div className="relative">
                     <MessageSquare size={24} />
@@ -125,7 +125,7 @@ export default function AIChatbot() {
                         initial={{ opacity: 0, y: 100, scale: 0.9, transformOrigin: "bottom right" }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                        className="fixed bottom-24 right-8 w-[400px] h-[600px] bg-white border-premium shadow-2xl z-[110] flex flex-col overflow-hidden"
+                        className="fixed bottom-20 right-4 left-4 lg:left-auto lg:right-8 lg:w-[400px] h-[75vh] lg:h-[600px] bg-white border-premium shadow-2xl z-[110] flex flex-col overflow-hidden"
                     >
                         {/* Header */}
                         <header className="bg-charcoal p-6 text-white flex justify-between items-center border-b border-white/10">

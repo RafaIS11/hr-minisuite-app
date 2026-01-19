@@ -77,11 +77,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-12 space-y-12 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-12 space-y-8 lg:space-y-12 max-w-7xl mx-auto">
       {/* Header / Brand Identity */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b-[1.5px] border-[#2C2C2A]">
         <div>
-          <h1 className="text-5xl font-black tracking-tighter text-[#2C2C2A] mb-2">MI PANEL</h1>
+          <h1 className="text-3xl lg:text-5xl font-black tracking-tighter text-[#2C2C2A] mb-2 uppercase">Mi Panel</h1>
           <div className="flex items-center gap-3">
             <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#714A38]">Protocol 5 Agents Activated</span>
             <div className="h-[1.5px] w-12 bg-[#2C2C2A]/10" />

@@ -19,7 +19,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     return (
         <div className="flex w-full">
             <MainSidebar />
-            <main className="flex-1 ml-[260px] print:ml-0 min-h-screen bg-[#FAFAF8]">
+            <main className="flex-1 lg:ml-[260px] pt-16 lg:pt-0 print:ml-0 min-h-screen bg-[#FAFAF8]">
                 {children}
             </main>
             <AIChatbot />
