@@ -137,32 +137,8 @@ export default function DashboardPage() {
 
       {/* Main Grid Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left Column: Messages & Recent Docs */}
+        {/* Left Column: Recent Docs */}
         <div className="lg:col-span-8 space-y-12">
-          {/* Communications */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-[1.5px] bg-[#714A38]" />
-              <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2C2C2A]">COMUNICACIONES</h3>
-            </div>
-            <Link href="/messages" className="block">
-              <div className="bg-[#2C2C2A] p-8 border-[1.5px] border-[#2C2C2A] text-white flex items-center justify-between group cursor-pointer hover:bg-[#714A38] transition-all shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)]">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/10 rounded-sm">
-                    <Bell size={24} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-black uppercase tracking-[0.2em]">Centro de Mensajes</p>
-                    <p className="text-[12px] font-bold text-white/40 mt-1">{stats.mensajesNuevos} mensajes nuevos recibidos</p>
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-full border-[1.5px] border-white/20 flex items-center justify-center group-hover:border-white transition-all">
-                  <ArrowRight size={18} />
-                </div>
-              </div>
-            </Link>
-          </section>
-
           {/* Recent Documents */}
           <section className="space-y-6">
             <div className="flex items-center justify-between">
