@@ -241,9 +241,9 @@ export default function CalendarPage() {
     return (
         <div className="h-screen flex flex-col bg-white overflow-hidden">
             <div className="flex-1 flex overflow-hidden">
-                <div className="flex-1 flex overflow-hidden lg:relative">
+                <div className="flex-1 flex overflow-hidden md:relative">
                     {/* Visual Sidebar Reference: uploaded_image_0 */}
-                    <aside className="hidden lg:flex w-[280px] border-r-premium bg-white flex-col p-8 space-y-12 overflow-y-auto z-10">
+                    <aside className="hidden md:flex w-[280px] border-r-premium bg-white flex-col p-8 space-y-12 overflow-y-auto z-10">
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-charcoal/40">Calendarios</h2>
@@ -295,8 +295,8 @@ export default function CalendarPage() {
 
                     <main className="flex-1 flex flex-col bg-white overflow-hidden relative">
                         {/* Header */}
-                        <div className="p-4 lg:p-6 border-b-premium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md z-20">
-                            <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8 w-full sm:w-auto">
+                        <div className="p-4 md:p-6 border-b-premium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md z-20">
+                            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 w-full sm:w-auto">
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary italic">Planificación</p>
                                     <h1 className="text-xl lg:text-2xl font-display uppercase tracking-tight text-charcoal leading-none">Enero 2026</h1>

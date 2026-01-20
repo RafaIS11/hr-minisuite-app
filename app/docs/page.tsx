@@ -207,7 +207,7 @@ export default function DocumentsPage() {
                 </div>
 
                 {/* Control Toolbar */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between py-4 lg:py-2 border-b-[1.5px] border-[#2C2C2A]/10 mb-4 lg:mb-2 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between py-4 md:py-2 border-b-[1.5px] border-[#2C2C2A]/10 mb-4 md:mb-2 gap-4">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-[#714A38] text-white rounded-[3px] text-[12px] font-bold border-[1.5px] border-[#2C2C2A] shadow-sm cursor-default">
                             <ExcelIcon size={14} /> Base de Datos
@@ -217,15 +217,15 @@ export default function DocumentsPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between lg:justify-end gap-3 w-full lg:w-auto">
-                        <div className="relative group flex-1 lg:flex-initial lg:mr-2">
+                    <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                        <div className="relative group flex-1 md:flex-initial md:mr-2">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#37352f]/30 group-focus-within:text-[#714A38]" size={14} />
                             <input
                                 type="text"
                                 placeholder="Buscar..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 pr-4 py-1.5 bg-transparent border-none text-[13px] outline-none w-full lg:w-48 lg:focus:w-80 transition-all placeholder:opacity-30"
+                                className="pl-9 pr-4 py-1.5 bg-transparent border-none text-[13px] outline-none w-full md:w-48 md:focus:w-80 transition-all placeholder:opacity-30"
                             />
                         </div>
 
@@ -338,9 +338,9 @@ export default function DocumentsPage() {
             </div>
 
             {/* --- DATA GRID / CARDS VIEW --- */}
-            <div className="max-w-full mx-auto px-6 lg:px-12 pb-24">
-                {/* Mobile Card View (lg:hidden) */}
-                <div className="lg:hidden space-y-4">
+            <div className="max-w-full mx-auto px-4 md:px-8 lg:px-12 pb-24">
+                {/* Mobile Card View (md:hidden) */}
+                <div className="md:hidden space-y-4">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-12 gap-4">
                             <Loader2 className="animate-spin text-[#714A38]" size={32} />
@@ -411,8 +411,8 @@ export default function DocumentsPage() {
                     )}
                 </div>
 
-                {/* Desktop Table View (hidden lg:block) */}
-                <div className="hidden lg:block border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
+                {/* Desktop Table View (hidden md:block) */}
+                <div className="hidden md:block border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
                     <div className="min-w-[1000px]">
                         {/* Header */}
                         <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">

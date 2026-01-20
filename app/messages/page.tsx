@@ -132,7 +132,7 @@ export default function MessagesPage() {
     useEffect(() => {
         if (selectedReceiverId) {
             fetchMessages(selectedReceiverId);
-            if (typeof window !== "undefined" && window.innerWidth < 1024) {
+            if (typeof window !== "undefined" && window.innerWidth < 768) {
                 setShowMobileSidebar(false);
             }
             const subscription = supabase
@@ -233,7 +233,7 @@ export default function MessagesPage() {
 
             <div className="flex-1 flex overflow-hidden relative">
                 <div className={cn(
-                    "w-full lg:w-80 border-r-premium bg-white flex flex-col absolute lg:relative inset-0 z-20 transition-transform duration-300 lg:translate-x-0",
+                    "w-full md:w-80 border-r-premium bg-white flex flex-col absolute md:relative inset-0 z-20 transition-transform duration-300 md:translate-x-0",
                     showMobileSidebar ? "translate-x-0" : "-translate-x-full"
                 )}>
                     <div className="p-4 border-b-premium">
@@ -284,7 +284,7 @@ export default function MessagesPage() {
                                     <div className="flex items-center gap-4">
                                         <button
                                             onClick={() => setShowMobileSidebar(true)}
-                                            className="lg:hidden p-2 text-charcoal/40"
+                                            className="md:hidden p-2 text-charcoal/40"
                                         >
                                             <ChevronRight size={20} className="rotate-180" />
                                         </button>
