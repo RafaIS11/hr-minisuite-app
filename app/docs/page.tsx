@@ -337,9 +337,82 @@ export default function DocumentsPage() {
                 </div>
             </div>
 
-            {/* --- DATA GRID --- */}
+            {/* --- DATA GRID / CARDS VIEW --- */}
             <div className="max-w-full mx-auto px-6 lg:px-12 pb-24">
-                <div className="border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
+                {/* Mobile Card View (lg:hidden) */}
+                <div className="lg:hidden space-y-4">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center p-12 gap-4">
+                            <Loader2 className="animate-spin text-[#714A38]" size={32} />
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Cargando...</p>
+                        </div>
+                    ) : docs.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-12 gap-4 bg-white border-[1.5px] border-[#2C2C2A] rounded-[3px]">
+                            <SearchX size={32} className="opacity-10" />
+                            <p className="text-[12px] font-black uppercase opacity-40">Sin documentos</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-4">
+                            {docs.map((doc) => (
+                                <motion.div
+                                    key={doc.id}
+                                    onClick={() => handleOpenDoc(doc)}
+                                    className="bg-white border-[1.5px] border-[#2C2C2A] p-4 rounded-[3px] shadow-[6px_6px_0px_0px_rgba(44,44,42,0.05)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                                >
+                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="flex items-center gap-3">
+                                            {getFileIcon(doc.formato)}
+                                            <h4 className="text-[14px] font-black text-[#2C2C2A] leading-tight line-clamp-2">{doc.nombre_archivo}</h4>
+                                        </div>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-sm"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        <span className={cn(
+                                            "px-2 py-0.5 rounded-[3px] text-[10px] font-black uppercase tracking-tight",
+                                            TIPOS.find(t => t.id === doc.tipo)?.color || 'bg-gray-100 text-gray-700'
+                                        )}>
+                                            {doc.tipo}
+                                        </span>
+                                        {doc.estado && (
+                                            <span className={cn(
+                                                "flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[10px] font-bold border border-transparent",
+                                                ESTADOS.find(e => e.id === doc.estado)?.color
+                                            )}>
+                                                {React.createElement(ESTADOS.find(e => e.id === doc.estado)?.icon || Circle, { size: 10 })}
+                                                {ESTADOS.find(e => e.id === doc.estado)?.label}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-3 border-t border-[#2C2C2A]/5">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-5 h-5 bg-[#714A38] text-white rounded-full flex items-center justify-center text-[9px] font-black border border-[#2C2C2A]">R</div>
+                                            <span className="text-[11px] font-bold opacity-40">Rafael I.</span>
+                                        </div>
+                                        <span className="text-[11px] font-black opacity-20 tabular-nums">
+                                            {new Date(doc.fecha_subida).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })}
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            <button
+                                onClick={() => setIsUploadOpen(true)}
+                                className="w-full py-4 border-[1.5px] border-dashed border-[#2C2C2A]/30 rounded-[3px] flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 hover:bg-[#F1F1EF] transition-all"
+                            >
+                                <Plus size={18} /> Nuevo Documento
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop Table View (hidden lg:block) */}
+                <div className="hidden lg:block border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
                     <div className="min-w-[1000px]">
                         {/* Header */}
                         <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
