@@ -77,7 +77,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 lg:p-12 space-y-8 lg:space-y-12 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 lg:p-12 space-y-8 lg:space-y-12 max-w-7xl mx-auto">
       {/* Header / Brand Identity */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b-[1.5px] border-[#2C2C2A]">
         <div>

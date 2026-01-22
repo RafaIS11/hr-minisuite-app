@@ -162,7 +162,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-8 lg:space-y-12 pb-24">
+        <div className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto space-y-8 lg:space-y-12 pb-24">
             <header className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div>
                     <p className="text-[10px] lg:text-sm font-medium text-primary uppercase tracking-widest mb-1">Mi Identidad</p>

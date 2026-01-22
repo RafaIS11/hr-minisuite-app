@@ -312,7 +312,7 @@ export default function CalendarPage() {
                                             key={tab.label}
                                             onClick={() => changeView(tab.view)}
                                             className={cn(
-                                                "px-3 lg:px-6 py-2 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all whitespace-nowrap",
+                                                "px-2 md:px-4 lg:px-6 py-2 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-all whitespace-nowrap",
                                                 currentView === tab.view ? "bg-white shadow-md text-charcoal" : "text-charcoal/30 hover:text-charcoal"
                                             )}
                                         >

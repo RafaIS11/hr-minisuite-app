@@ -415,7 +415,7 @@ export default function DocumentsPage() {
                 <div className="hidden md:block border-[1.5px] border-[#2C2C2A] bg-white shadow-[12px_12px_0px_0px_rgba(44,44,42,0.05)] overflow-x-auto rounded-[3px]">
                     <div className="min-w-[1000px]">
                         {/* Header */}
-                        <div className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
+                        <div className="grid grid-cols-[38px_1.5fr_1fr_0.8fr_0.8fr_1.8fr_1fr] bg-transparent border-b-[1.5px] border-[#2C2C2A]/10">
                             <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
                                 <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm" />
                             </div>
@@ -470,7 +470,7 @@ export default function DocumentsPage() {
                                 <motion.div
                                     layout
                                     key={doc.id}
-                                    className="grid grid-cols-[38px_2fr_1fr_1fr_0.8fr_1.5fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none group/item"
+                                    className="grid grid-cols-[38px_1.5fr_1fr_0.8fr_0.8fr_1.8fr_1fr] bg-transparent group/row hover:bg-[#F1F1EF]/30 transition-all cursor-default select-none group/item"
                                 >
                                     <div className="border-r-[1.5px] border-[#2C2C2A]/10 p-2 flex items-center justify-center">
                                         <div className="w-3.5 h-3.5 border border-[#2C2C2A]/20 rounded-sm opacity-0 group-hover/row:opacity-100 transition-opacity" />

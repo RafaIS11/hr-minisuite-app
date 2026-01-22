@@ -61,8 +61,8 @@ export function MainSidebar() {
 
     const sidebarContent = (
         <aside className={cn(
-            "fixed lg:static inset-y-0 left-0 w-[260px] border-r-[1.5px] border-[#2C2C2A] bg-[#FAFAF8] flex flex-col z-[100] print:hidden overflow-hidden transition-transform duration-300 ease-in-out",
-            isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 border-r-[1.5px] border-[#2C2C2A] bg-[#FAFAF8] flex flex-col z-[100] print:hidden overflow-hidden transition-transform duration-300 ease-in-out",
+            isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Brand Section */}
             <div className="p-8 border-b-[1.5px] border-[#2C2C2A]/10 flex items-center justify-between">
@@ -80,7 +80,7 @@ export function MainSidebar() {
                 </Link>
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden p-2 text-[#2C2C2A]/40 hover:text-[#2C2C2A]"
+                    className="md:hidden p-2 text-[#2C2C2A]/40 hover:text-[#2C2C2A]"
                 >
                     <X size={20} />
                 </button>
@@ -146,7 +146,7 @@ export function MainSidebar() {
     return (
         <>
             {/* Mobile Header Toggle */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#FAFAF8] border-b-[1.5px] border-[#2C2C2A]/10 px-6 flex items-center justify-between z-[90] print:hidden">
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#FAFAF8] border-b-[1.5px] border-[#2C2C2A]/10 px-6 flex items-center justify-between z-[90] print:hidden">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-[#714A38] rounded-sm flex items-center justify-center border-[1.5px] border-[#2C2C2A]">
                         <span className="text-white font-black text-sm">H</span>
@@ -169,7 +169,7 @@ export function MainSidebar() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsOpen(false)}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[95] lg:hidden"
+                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[95] md:hidden"
                     />
                 )}
             </AnimatePresence>

@@ -54,7 +54,7 @@ export default function AnalyticsPage() {
     if (loading) return <div className="p-8 animate-pulse text-charcoal/40 font-bold">Calculando métricas corporativas...</div>;
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
             <header>
                 <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Business Intelligence</p>
                 <h1 className="text-4xl font-display tracking-tight text-charcoal">Análisis de Datos</h1>

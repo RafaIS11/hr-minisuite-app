@@ -313,7 +313,7 @@ export default function MessagesPage() {
                                         <div
                                             key={msg.id}
                                             className={cn(
-                                                "flex flex-col max-w-[70%]",
+                                                "flex flex-col max-w-[85%] md:max-w-[75%]",
                                                 msg.sender_id === currentUser?.id ? "ml-auto items-end" : "mr-auto items-start"
                                             )}
                                         >
